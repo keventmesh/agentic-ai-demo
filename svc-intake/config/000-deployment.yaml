@@ -1,0 +1,37 @@
+# Deploys and manages the pods for the intake service.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: file-intake-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: file-intake
+  template:
+    metadata:
+      labels:
+        app: file-intake
+    spec:
+      containers:
+        - name: server
+          # IMPORTANT: Replace this with the path to your own container image
+          image: DOCKER_REGISTRY/file-intake-service:latest
+          env:
+            - name: PORT
+              value: "8080"
+          ports:
+            # This must match the PORT value above
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20

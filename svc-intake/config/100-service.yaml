@@ -1,0 +1,12 @@
+# Provides a stable DNS name and load balancing for the pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: file-intake-service
+spec:
+  selector:
+    app: file-intake
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
