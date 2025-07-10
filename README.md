@@ -1,7 +1,34 @@
 
 ## Running on Kubernetes
 
-TODO
+Set up some environment variables in your shell:
+
+```shell
+export IMAGE_REGISTRY="docker.io/aliok"
+export IMAGE_TAG="latest"
+```
+
+Build the images:
+```shell
+skaffold build --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}"
+```
+
+Run the application on Kubernetes:
+
+```shell
+skaffold run --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}"
+# on Minikube/kind, you can use:
+# skaffold deploy --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}" --load-images=true
+# or, 2 steps:
+# skaffold build --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}" | kubectl apply -f -
+```
+
+## Building and pushing images
+
+```shell
+skaffold build --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}" --push
+```
+
 
 ## Setup Python Environment
 ```shell

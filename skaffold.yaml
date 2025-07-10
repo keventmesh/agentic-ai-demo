@@ -1,0 +1,28 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: runtime-services
+build:
+  platforms: [ "linux/amd64" ]
+
+  local:
+    useBuildkit: false
+
+  artifacts:
+
+    - image: svc-intake
+      docker:
+        dockerfile: Dockerfile
+        target: svc-intake
+
+manifests:
+  rawYaml:
+    - config/100-namespace.yaml
+
+    - svc-intake/config/000-deployment.yaml
+    - svc-intake/config/100-service.yaml
+    - svc-intake/config/200-sinkbinding.yaml
+
+deploy:
+  statusCheckDeadlineSeconds: 600
+  tolerateFailuresUntilDeadline: true

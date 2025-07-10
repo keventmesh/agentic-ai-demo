@@ -2,13 +2,13 @@
 apiVersion: sources.knative.dev/v1
 kind: SinkBinding
 metadata:
-  name: file-intake-binding
+  name: svc-intake-binding
 spec:
   # The "subject" is the workload to inject K_SINK into.
   subject:
     apiVersion: apps/v1
     kind: Deployment
-    name: file-intake-service
+    name: svc-intake
 
   # The "sink" is the destination where events should be sent.
   # This assumes a Broker named 'default' in the same namespace.
