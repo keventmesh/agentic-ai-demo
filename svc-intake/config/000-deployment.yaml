@@ -2,16 +2,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: file-intake-service
+  name: svc-intake
+  namespace: keventmesh
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: file-intake
+      app: svc-intake
   template:
     metadata:
       labels:
-        app: file-intake
+        app: svc-intake
     spec:
       containers:
         - name: server

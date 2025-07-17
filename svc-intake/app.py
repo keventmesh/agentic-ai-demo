@@ -45,7 +45,7 @@ def create_cloudevent(content):
     headers = {
         "Ce-Specversion": "1.0",
         "Ce-Type": "com.example.triage.intake.new",
-        "Ce-Source": "/services/file-intake-service",
+        "Ce-Source": "/services/svc-intake",
         "Ce-Id": event_id,
         "Ce-Subject": message_id, # The subject of the event is the message ID
         "Content-Type": "application/json",

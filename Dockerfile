@@ -32,5 +32,5 @@ COPY --from=builder /app/svc-intake/ .
 # Activate the venv in the final image so the CMD can find gunicorn
 ENV PATH="/opt/venv/bin:$PATH"
 
-EXPOSE ${PORT}
-CMD ["gunicorn", "--bind", "0.0.0.0:${PORT}", "app:app"]
+EXPOSE $PORT
+CMD gunicorn --bind "0.0.0.0:${PORT}" "app:app"

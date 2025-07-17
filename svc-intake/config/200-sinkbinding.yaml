@@ -3,6 +3,7 @@ apiVersion: sources.knative.dev/v1
 kind: SinkBinding
 metadata:
   name: svc-intake-binding
+  namespace: keventmesh
 spec:
   # The "subject" is the workload to inject K_SINK into.
   subject:

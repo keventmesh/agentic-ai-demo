@@ -18,6 +18,7 @@ build:
 manifests:
   rawYaml:
     - config/100-namespace.yaml
+    - config/200-kafka-broker.yaml
 
     - svc-intake/config/000-deployment.yaml
     - svc-intake/config/100-service.yaml

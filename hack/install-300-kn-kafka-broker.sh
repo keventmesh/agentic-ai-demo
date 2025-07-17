@@ -11,6 +11,7 @@ header "Using Knative Kafka Broker Version:         ${eventing_kafka_broker_vers
 header "Setting up Knative Eventing Kafka suite "
 curl -L ${eventing_kafka_broker_url}/eventing-kafka.yaml \
   | sed 's/namespace: .*/namespace: knative-eventing/' \
+  | sed 's/default.topic.replication.factor: .*/default.topic.replication.factor: "1"/' \
   | sed 's/REPLACE_WITH_CLUSTER_URL/my-cluster-kafka-bootstrap.kafka:9092/' \
   | kubectl apply -f - -n knative-eventing
 

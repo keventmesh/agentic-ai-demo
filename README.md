@@ -18,7 +18,6 @@ Build the images:
 ```shell
 skaffold build --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}"
 ```
-
 Run the application on Kubernetes:
 
 ```shell
@@ -26,7 +25,13 @@ skaffold run --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}"
 # on Minikube/kind, you can use:
 # skaffold deploy --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}" --load-images=true
 # or, 2 steps:
-# skaffold build --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}" | kubectl apply -f -
+# skaffold render --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}" | kubectl apply -f -
+```
+
+Clean up the resources:
+
+```shell
+skaffold delete --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}"
 ```
 
 ## Building and pushing images

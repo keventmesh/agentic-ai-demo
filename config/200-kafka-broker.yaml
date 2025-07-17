@@ -3,8 +3,9 @@ kind: Broker
 metadata:
   name: default
   namespace: keventmesh
+  annotations:
+    eventing.knative.dev/broker.class: Kafka
 spec:
-  brokerClass: KafkaBroker
   config:
     apiVersion: v1
     kind: ConfigMap
