@@ -28,10 +28,30 @@ skaffold run --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}"
 # skaffold render --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}" | kubectl apply -f -
 ```
 
+Send a request to the intake service:
+
+```shell
+# start Kubectl port-forward to access the service
+kubectl port-forward -n keventmesh svc/svc-intake 8080:80
+# then, in a new terminal, send a request to the intake service:
+curl -X POST http://localhost:8080/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Hello, I need help with my password. \n Jane Doe \n"
+    }
+  '
+```
+
+You should receive a response like this:
+
+```json
+{"eventId":"9b78c13a-9c38-42c7-84fa-615f45add5af","status":"event accepted"}
+```
+
 Clean up the resources:
 
 ```shell
-skaffold delete --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}"
+skaffold delete
 ```
 
 ## Building and pushing images
