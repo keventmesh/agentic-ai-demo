@@ -75,5 +75,17 @@ This indicates the event has been successfully sent to the Broker.
     Content-Type: application/json
     User-Agent: python-requests/2.32.3
     
-    {"message_id":"c8cf6c69-1d5e-4d76-bf63-91601c6d5d8b","content":"Hello, my name is Jane Doe. I am writing because I am completely locked out of my account for the Gizmo-X product. I have tried the password reset link five times and it is not working. I am really frustrated because I have a deadline today and need to access my files. Can someone please help me ASAP? My email is jane.doe@example.com.","metadata":{},"timestamp":"2025-07-18T19:56:12.762422","structured":null,"route":null,"support":null,"website":null,"finance":null,"comment":null,"error":[]}
+    {
+        "message_id":"c8cf6c69-1d5e-4d76-bf63-91601c6d5d8b",
+        "content":"Hello, my name is Jane Doe. I am writing because I am completely locked out of my account for the Gizmo-X product. I have tried the password reset link five times and it is not working. I am really frustrated because I have a deadline today and need to access my files. Can someone please help me ASAP? My email is jane.doe@example.com.",
+        "metadata":{},
+        "timestamp":"2025-07-18T19:56:12.762422",
+        "structured":null,
+        "route":null,
+        "support":null,
+        "website":null,
+        "finance":null,
+        "comment":null,
+        "error":[]
+    }
    ```
