@@ -41,13 +41,15 @@ The service is configured using the following environment variables:
       -H "Ce-Subject: manual-message-67890" \
       -d '{
       "message_id": "manual-message-67890",
-      "content": "Hello team, my name is Alice. The battery on my Quantum Widget 3000 seems to be draining far too quickly. Can you advise? My email is alice.w@email-provider.com",
+      "content": "Hello, my name is Jane Doe. I am writing because I am completely locked out of my account for the Gizmo-X product. I have tried the password reset link five times and it is not working. I am really frustrated because I have a deadline today and need to access my files. Can someone please help me ASAP? My email is jane.doe@example.com.",
       "metadata": {},
+      "timestamp": "2025-07-18T19:56:12.762422",
       "structured": null,
       "route": null,
       "support": null,
       "website": null,
       "finance": null,
+      "comment": null,
       "error": []
       }'
     ```
