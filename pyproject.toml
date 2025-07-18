@@ -1,0 +1,16 @@
+[project]
+name = "agentic-demo"
+version = "0.1.0"
+dependencies = [
+    "Flask==3.0.3",
+    "requests==2.32.3",
+    "gunicorn==22.0.0",
+    "pydantic==2.11.7",
+    "openai==1.97.0",
+    "instructor==1.3.3",
+]
+
+[tool.setuptools.packages.find]
+# This tells setuptools to automatically find all packages
+# (like your 'models' package) in the project.
+where = ["."]

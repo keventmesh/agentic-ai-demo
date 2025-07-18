@@ -1,0 +1,15 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: svc-structure-processor
+  namespace: keventmesh
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: com.example.triage.intake.new
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: svc-structure-processor

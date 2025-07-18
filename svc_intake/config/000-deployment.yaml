@@ -1,4 +1,3 @@
-# Deploys and manages the pods for the intake service.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,15 +15,13 @@ spec:
     spec:
       containers:
         - name: server
-          # IMPORTANT: Replace this with the path to your own container image
           image: svc-intake:latest
           env:
             - name: PORT
               value: "8080"
           ports:
-            # This must match the PORT value above
             - containerPort: 8080
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           readinessProbe:
             httpGet:
               path: /healthz

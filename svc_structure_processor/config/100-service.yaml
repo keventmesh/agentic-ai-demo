@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-structure-processor
+  namespace: keventmesh
+spec:
+  selector:
+    app: svc-structure-processor
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

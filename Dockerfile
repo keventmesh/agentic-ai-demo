@@ -9,11 +9,13 @@ RUN python -m venv /opt/venv
 # Activate the venv for subsequent RUN commands
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Copy and install all common dependencies into the shared venv
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy the file that defines the project and its dependencies
+COPY pyproject.toml .
 
-# Copy the entire source code for all services
+# Install all dependencies from pyproject.toml into the venv
+RUN pip install --no-cache-dir .
+
+# Copy the rest of the source code
 COPY . .
 
 # --- Final Image Targets ---
@@ -22,15 +24,36 @@ FROM python:3.11-slim as svc-intake
 
 WORKDIR /app
 ENV PORT=8080
+# Set PYTHONPATH so Python can find the 'models' module from the root
+ENV PYTHONPATH="/app"
 
-# Copy the shared virtual environment from the builder stage
+# Copy the virtual environment with all dependencies installed
 COPY --from=builder /opt/venv /opt/venv
+# Copy the entire application source code
+COPY --from=builder /app .
 
-# Copy the source code for ONLY the svc-intake
-COPY --from=builder /app/svc-intake/ .
-
-# Activate the venv in the final image so the CMD can find gunicorn
+# Activate the venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-EXPOSE $PORT
-CMD gunicorn --bind "0.0.0.0:${PORT}" "app:app"
+EXPOSE ${PORT}
+CMD gunicorn --bind "0.0.0.0:${PORT}" "svc_intake.app:app"
+
+
+# --- Final Image for Structure Processor ---
+FROM python:3.11-slim as svc-structure-processor
+
+WORKDIR /app
+ENV PORT=8080
+# Set PYTHONPATH so Python can find the 'models' module from the root
+ENV PYTHONPATH="/app"
+
+# Copy the virtual environment with all dependencies installed
+COPY --from=builder /opt/venv /opt/venv
+# Copy the entire application source code
+COPY --from=builder /app .
+
+# Activate the venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+EXPOSE ${PORT}
+CMD gunicorn --bind "0.0.0.0:${PORT}" "svc_structure_processor.app:app"

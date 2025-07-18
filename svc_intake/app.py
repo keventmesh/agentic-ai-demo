@@ -4,6 +4,9 @@ import logging
 import requests
 from flask import Flask, request, jsonify
 
+# This import now works cleanly because of the project structure
+from models import OuterWrapper
+
 # --- Configuration ---
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -25,32 +28,25 @@ def create_cloudevent(content):
     Generates a unique ID for the event and the message itself.
     """
     event_id = str(uuid.uuid4())
-    # This ID serves as the unique identifier for the message throughout the system.
-    message_id = event_id
+    message_id = event_id  # This ID serves as the unique identifier for the message
 
-    # The data payload is the OuterWrapper model's initial state
-    payload = {
-        "message_id": message_id,
-        "content": content,
-        "metadata": {},
-        "structured": None,
-        "route": None,
-        "support": None,
-        "website": None,
-        "finance": None,
-        "error": []
-    }
+    # Use the Pydantic model to create the initial payload
+    wrapper = OuterWrapper(
+        message_id=message_id,
+        content=content,
+        metadata={},
+        error=[]
+    )
+    payload = wrapper.model_dump()
 
-    # The headers are the CloudEvent attributes
     headers = {
         "Ce-Specversion": "1.0",
         "Ce-Type": "com.example.triage.intake.new",
         "Ce-Source": "/services/svc-intake",
         "Ce-Id": event_id,
-        "Ce-Subject": message_id, # The subject of the event is the message ID
+        "Ce-Subject": message_id,
         "Content-Type": "application/json",
     }
-
     return headers, payload
 
 # --- Flask Routes ---
@@ -80,7 +76,7 @@ def handle_json_request():
         logging.warning("Bad request: 'content' must be a non-empty string")
         return jsonify({"error": "'content' must be a non-empty string"}), 400
 
-    logging.info(f"Received message content, creating event.")
+    logging.info("Received message content, creating event.")
     headers, payload = create_cloudevent(content)
 
     try:
@@ -94,8 +90,6 @@ def handle_json_request():
     except requests.exceptions.RequestException as e:
         logging.error(f"Failed to send event to Broker: {e}")
         return jsonify({"error": "Failed to forward event to the eventing system"}), 503
-
-    return jsonify({"error": "An unexpected error occurred"}), 500
 
 # --- Main Entry Point ---
 if __name__ == '__main__':

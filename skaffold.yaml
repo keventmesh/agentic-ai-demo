@@ -15,14 +15,26 @@ build:
         dockerfile: Dockerfile
         target: svc-intake
 
+    - image: svc-structure-processor
+      docker:
+        dockerfile: Dockerfile
+        target: svc-structure-processor
+
 manifests:
   rawYaml:
     - config/100-namespace.yaml
     - config/200-kafka-broker.yaml
 
-    - svc-intake/config/000-deployment.yaml
-    - svc-intake/config/100-service.yaml
-    - svc-intake/config/200-sinkbinding.yaml
+    - svc_intake/config/000-deployment.yaml
+    - svc_intake/config/100-service.yaml
+    - svc_intake/config/200-sinkbinding.yaml
+
+    - svc_structure_processor/config/000-deployment.yaml
+    - svc_structure_processor/config/100-service.yaml
+    - svc_structure_processor/config/200-trigger.yaml
+    - svc_structure_processor/config/300-sinkbinding.yaml
+    - svc_structure_processor/config/400-configmap.yaml
+    - svc_structure_processor/config/410-llm-api-key-secret.yaml
 
 deploy:
   statusCheckDeadlineSeconds: 600
