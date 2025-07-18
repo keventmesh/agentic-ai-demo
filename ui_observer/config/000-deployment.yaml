@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui-observer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ui-observer
+  template:
+    metadata:
+      labels:
+        app: ui-observer
+    spec:
+      containers:
+        - name: server
+          image: svc-ui-observer:latest
+          env:
+            - name: PORT
+              value: "8080"
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: IfNotPresent
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080

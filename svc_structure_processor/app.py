@@ -5,6 +5,7 @@ import requests
 import instructor
 from flask import Flask, request, jsonify
 from openai import OpenAI
+from typing import List
 
 # This import now works cleanly because of the project structure
 from models import OuterWrapper, StructuredObject

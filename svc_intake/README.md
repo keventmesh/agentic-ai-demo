@@ -48,7 +48,7 @@ This service is deployed as a standard Kubernetes `Deployment` and `Service`. It
     curl -X POST http://localhost:8080/ \
       -H "Content-Type: application/json" \
       -d '{
-        "content": "Hello, I need help with my password. \n Jane Doe \n janedoe@example.com"
+        "content": "Hello, my name is Jane Doe. I am writing because I am completely locked out of my account for the Gizmo-X product. I have tried the password reset link five times and it is not working. I am really frustrated because I have a deadline today and need to access my files. Can someone please help me ASAP? My email is jane.doe@example.com."
       }'
     ```
 
