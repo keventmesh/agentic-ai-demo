@@ -20,6 +20,11 @@ build:
         dockerfile: Dockerfile
         target: svc-structure-processor
 
+    - image: ui-observer
+      docker:
+        dockerfile: Dockerfile
+        target: ui-observer
+
 manifests:
   rawYaml:
     - config/100-namespace.yaml
@@ -35,6 +40,10 @@ manifests:
     - svc_structure_processor/config/300-sinkbinding.yaml
     - svc_structure_processor/config/400-configmap.yaml
     - svc_structure_processor/config/410-llm-api-key-secret.yaml
+
+    - ui_observer/config/000-deployment.yaml
+    - ui_observer/config/100-service.yaml
+    - ui_observer/config/200-trigger.yaml
 
 deploy:
   statusCheckDeadlineSeconds: 600

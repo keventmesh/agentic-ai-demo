@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knative Event Mesh Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e0e0e0; padding-bottom: 20px; }
+        h1 { color: #2c3e50; }
+        #event-stream-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .message-card {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            width: 380px;
+            padding: 15px;
+            box-sizing: border-box;
+            transition: box-shadow 0.3s ease;
+        }
+        .message-card:hover { box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        .message-card h3 { font-size: 14px; margin-top: 0; margin-bottom: 10px; color: #34495e; word-break: break-all; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .event-list { list-style-type: none; padding: 0; margin: 0; }
+        .event-item {
+            font-size: 12px;
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            border-left: 4px solid #ccc;
+            background-color: #f9f9f9;
+        }
+        /* Color coding for different event types */
+        .event-item[data-event-type*="intake.new"] { border-color: #3498db; }
+        .event-item[data-event-type*="structured"] { border-color: #2ecc71; }
+        .event-item[data-event-type*="guardian-failed"] { border-color: #e74c3c; }
+        .event-item[data-event-type*="cleared"] { border-color: #f1c40f; }
+        .event-item[data-event-type*="ready"] { border-color: #9b59b6; }
+        .event-item[data-event-type*="route"] { border-color: #e67e22; }
+        .event-item strong { display: block; font-weight: 600; color: #2c3e50; }
+
+        .event-meta {
+            display: block;
+            font-size: 11px;
+            color: #555;
+            margin-top: 4px;
+            margin-bottom: 8px;
+            padding: 6px 8px; /* Adjusted padding */
+            background-color: #eaf2f8;
+            border-radius: 3px;
+        }
+        .event-meta span {
+            display: block;
+            font-family: monospace;
+            line-height: 1.4;
+            word-break: break-all;
+        }
+
+        .event-item pre {
+            background-color: #ecf0f1;
+            color: #333;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Knative Event Mesh - Live Demo</h1>
+    <p>Send a message to the intake service to see its journey through the system in real-time.</p>
+</header>
+<main id="event-stream-container"></main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const container = document.getElementById("event-stream-container");
+        const eventSource = new EventSource("/stream");
+
+        eventSource.addEventListener("triage_event", function(event) {
+            const data = JSON.parse(event.data);
+            const { messageId, cloudEvent } = data;
+
+            let messageCard = document.getElementById(messageId);
+            if (!messageCard) {
+                messageCard = document.createElement("div");
+                messageCard.className = "message-card";
+                messageCard.id = messageId;
+                messageCard.innerHTML = `<h3>Message ID: ${messageId}</h3><ul class="event-list"></ul>`;
+                container.appendChild(messageCard);
+            }
+
+            const eventList = messageCard.querySelector(".event-list");
+            const listItem = document.createElement("li");
+            listItem.className = "event-item";
+            listItem.dataset.eventType = cloudEvent.type;
+
+            const formattedPayload = JSON.stringify(cloudEvent.payload, null, 2);
+
+            listItem.innerHTML = `
+                <strong>${cloudEvent.type}</strong>
+                <div class="event-meta">
+                    <span>Source: ${cloudEvent.source}</span>
+                    <span>Event ID: ${cloudEvent.id}</span>
+                </div>
+                <pre>${formattedPayload}</pre>
+            `;
+
+            eventList.prepend(listItem);
+        });
+
+        eventSource.onerror = function(err) {
+            console.error("EventSource failed:", err);
+        };
+    });
+</script>
+</body>
+</html>

@@ -4,7 +4,6 @@ import logging
 import requests
 from flask import Flask, request, jsonify
 
-# This import now works cleanly because of the project structure
 from models import OuterWrapper
 
 # --- Configuration ---
@@ -37,7 +36,9 @@ def create_cloudevent(content):
         metadata={},
         error=[]
     )
-    payload = wrapper.model_dump()
+    # Use model_dump_json() to get a valid JSON string.
+    # Pydantic will correctly convert the datetime object to an ISO 8601 string.
+    json_payload_string = wrapper.model_dump_json()
 
     headers = {
         "Ce-Specversion": "1.0",
@@ -47,7 +48,7 @@ def create_cloudevent(content):
         "Ce-Subject": message_id,
         "Content-Type": "application/json",
     }
-    return headers, payload
+    return headers, json_payload_string
 
 # --- Flask Routes ---
 @app.route('/healthz', methods=['GET'])
@@ -77,11 +78,13 @@ def handle_json_request():
         return jsonify({"error": "'content' must be a non-empty string"}), 400
 
     logging.info("Received message content, creating event.")
-    headers, payload = create_cloudevent(content)
+    headers, json_payload_string = create_cloudevent(content)
 
     try:
         logging.info(f"Sending event {headers['Ce-Id']} to Broker.")
-        response = requests.post(K_SINK, json=payload, headers=headers, timeout=5.0)
+        # Use the 'data' parameter for the pre-serialized JSON string.
+        # Do not use the 'json' parameter.
+        response = requests.post(K_SINK, data=json_payload_string, headers=headers, timeout=5.0)
         response.raise_for_status()
 
         logging.info(f"Event accepted by Broker with status code: {response.status_code}")

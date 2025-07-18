@@ -1,13 +1,18 @@
-from pydantic import BaseModel
-from typing import List, Optional
+from pydantic import BaseModel, Field
+from typing import List, Optional, Any, Dict
+from datetime import datetime
 
 # This model defines the structured data we want the LLM to extract.
 class StructuredObject(BaseModel):
     reason: str
-    customer_name: str
-    email_address: str
-    product_name: str
-    sentiment: str
+    sentiment: Optional[str]
+    company_id: Optional[str]
+    company_name: Optional[str]
+    customer_name: Optional[str]
+    country: Optional[str]
+    email_address: Optional[str]
+    phone: Optional[str]
+    product_name: Optional[str]
     escalate: bool
 
 # This is the main data object that flows through the system.
@@ -15,10 +20,12 @@ class StructuredObject(BaseModel):
 class OuterWrapper(BaseModel):
     message_id: str
     content: str
-    metadata: dict
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
     structured: Optional[StructuredObject] = None
-    route: Optional[str] = None
+    route: Optional[dict] = None
     support: Optional[dict] = None
     website: Optional[dict] = None
     finance: Optional[dict] = None
-    error: List[str] = []
+    comment: Optional[str] = None
+    error: Optional[list] = Field(default_factory=list)

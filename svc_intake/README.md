@@ -48,7 +48,7 @@ This service is deployed as a standard Kubernetes `Deployment` and `Service`. It
     curl -X POST http://localhost:8080/ \
       -H "Content-Type: application/json" \
       -d '{
-        "content": "Hello, I need help with my password. \n Jane Doe \n janedoe@example.com"
+        "content": "Hello, my name is Jane Doe. I am writing because I am completely locked out of my account for the Gizmo-X product. I have tried the password reset link five times and it is not working. I am really frustrated because I have a deadline today and need to access my files. Can someone please help me ASAP? My email is jane.doe@example.com."
       }'
     ```
 
@@ -58,3 +58,34 @@ This service is deployed as a standard Kubernetes `Deployment` and `Service`. It
     ```
 
 This indicates the event has been successfully sent to the Broker.
+
+- The event that's sent will look like this:
+    ```
+    POST /intake-output HTTP/1.1
+    Host: keventmesh-agentic-demo.requestcatcher.com
+    Accept: */*
+    Accept-Encoding: gzip, deflate
+    Ce-Id: c8cf6c69-1d5e-4d76-bf63-91601c6d5d8b
+    Ce-Source: /services/svc-intake
+    Ce-Specversion: 1.0
+    Ce-Subject: c8cf6c69-1d5e-4d76-bf63-91601c6d5d8b
+    Ce-Type: com.example.triage.intake.new
+    Connection: keep-alive
+    Content-Length: 559
+    Content-Type: application/json
+    User-Agent: python-requests/2.32.3
+    
+    {
+        "message_id":"c8cf6c69-1d5e-4d76-bf63-91601c6d5d8b",
+        "content":"Hello, my name is Jane Doe. I am writing because I am completely locked out of my account for the Gizmo-X product. I have tried the password reset link five times and it is not working. I am really frustrated because I have a deadline today and need to access my files. Can someone please help me ASAP? My email is jane.doe@example.com.",
+        "metadata":{},
+        "timestamp":"2025-07-18T19:56:12.762422",
+        "structured":null,
+        "route":null,
+        "support":null,
+        "website":null,
+        "finance":null,
+        "comment":null,
+        "error":[]
+    }
+   ```

@@ -1,0 +1,15 @@
+# This Trigger subscribes the UI service to ALL events on the Broker.
+# It has no filter, so it receives a copy of every event.
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: ui-observer-trigger
+  namespace: keventmesh
+spec:
+  broker: default
+  # The subscriber is our UI service
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: ui-observer
