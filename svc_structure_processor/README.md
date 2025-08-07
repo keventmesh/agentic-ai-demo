@@ -27,7 +27,7 @@ The service is configured using the following environment variables:
 - Run the Flask application:
     ```bash
      K_SINK=<your-Kafka-broker> PORT=8081 LLM_API_BASE_URL=<your-LLM-server> LLM_API_KEY=<your-LLM-api-key> LLM_MODEL_NAME=<your-LLM-model-name> python app.py
-    # e.g. K_SINK=https://keventmesh-agentic-demo.requestcatcher.com/structure-processor-output PORT=8080 LLM_API_BASE_URL="http://localhost:11434/v1" LLM_API_KEY="none" LLM_MODEL_NAME="mistral-small3.2:24b" python app.py
+    # e.g. K_SINK=https://keventmesh-agentic-demo.requestcatcher.com/structure-processor-output PORT=8080 LLM_API_BASE_URL="http://localhost:11434/v1" LLM_API_KEY="none" LLM_MODEL_NAME="gpt-oss:20b" python app.py
     ```
 
 -  In a new terminal, use `curl` to send a JSON payload to the service.

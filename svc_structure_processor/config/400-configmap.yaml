@@ -5,4 +5,4 @@ metadata:
   namespace: keventmesh
 data:
   apiBaseUrl: "http://192.168.2.160:11434/v1"
-  modelName: "mistral-small3.2:24b"
+  modelName: "gpt-oss:20b"
