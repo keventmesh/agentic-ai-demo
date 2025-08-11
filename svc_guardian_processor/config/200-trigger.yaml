@@ -1,0 +1,15 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: svc-guardian-processor
+  namespace: keventmesh
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: com.example.triage.structured
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: svc-guardian-processor

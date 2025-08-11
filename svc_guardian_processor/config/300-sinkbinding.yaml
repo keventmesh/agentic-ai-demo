@@ -1,0 +1,17 @@
+# This SinkBinding injects the K_SINK environment variable into our Deployment.
+# This tells our service where to send its *outgoing* events.
+apiVersion: sources.knative.dev/v1
+kind: SinkBinding
+metadata:
+  name: svc-guardian-processor-binding
+  namespace: keventmesh
+spec:
+  subject:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: svc-guardian-processor
+  sink:
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: default

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: svc-guardian-processor
+  namespace: keventmesh
+data:
+  apiBaseUrl: "http://192.168.2.160:11434/v1"
+  modelName: "granite3-guardian:8b-fp16"
