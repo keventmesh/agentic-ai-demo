@@ -4,5 +4,5 @@ metadata:
   name: svc-guardian-processor
   namespace: keventmesh
 data:
-  apiBaseUrl: "http://192.168.2.160:11434/v1"
-  modelName: "granite3-guardian:8b-fp16"
+  apiBaseUrl: "${GUARDIAN_PROCESSOR_API_BASE_URL}"
+  modelName: "${GUARDIAN_PROCESSOR_MODEL_NAME}"
