@@ -1,0 +1,15 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: svc-customer-lookup
+  namespace: keventmesh
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: com.example.triage.guardian.passed
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: svc-customer-lookup

@@ -25,6 +25,11 @@ build:
         dockerfile: Dockerfile
         target: svc-guardian-processor
 
+    - image: svc-customer-lookup
+      docker:
+        dockerfile: Dockerfile
+        target: svc-customer-lookup
+
     - image: ui-observer
       docker:
         dockerfile: Dockerfile
@@ -61,6 +66,11 @@ manifests:
     - svc_guardian_processor/config/300-sinkbinding.yaml
     - svc_guardian_processor/config/400-configmap.yaml
     - svc_guardian_processor/config/410-llm-api-key-secret.yaml
+
+    - svc_customer_lookup/config/000-deployment.yaml
+    - svc_customer_lookup/config/100-service.yaml
+    - svc_customer_lookup/config/200-trigger.yaml
+    - svc_customer_lookup/config/300-sinkbinding.yaml
 
     - ui_observer/config/000-deployment.yaml
     - ui_observer/config/100-service.yaml
