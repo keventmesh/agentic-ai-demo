@@ -23,23 +23,23 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: db-customer-secret
-                  key: POSTGRES_USER
+                  key: user
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: db-customer-secret
-                  key: POSTGRES_PASSWORD
+                  key: password
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
                   name: db-customer-secret
-                  key: POSTGRES_DB
+                  key: db
             - name: LOGGING_LOG_LEVEL
               value: "0"
           ports:
             - containerPort: 5432
 
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           readinessProbe:
             exec:
               command:
