@@ -30,10 +30,19 @@ build:
         dockerfile: Dockerfile
         target: ui-observer
 
+    - image: db-customer
+      docker:
+        dockerfile: Dockerfile
+        target: db-customer
+
 manifests:
   rawYaml:
     - config/100-namespace.yaml
     - config/200-kafka-broker.yaml
+
+    - db_customer/config/400-secret.yaml
+    - db_customer/config/500-deployment.yaml
+    - db_customer/config/600-service.yaml
 
     - svc_intake/config/000-deployment.yaml
     - svc_intake/config/100-service.yaml

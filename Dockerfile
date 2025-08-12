@@ -86,3 +86,8 @@ COPY --from=builder /app .
 ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE ${PORT}
 CMD gunicorn --worker-class gevent --workers 1 --timeout 0 --bind "0.0.0.0:${PORT}" "ui_observer.app:app"
+
+
+FROM postgres:16.4 as db-customer
+COPY --from=builder /app/db_customer/schema.sql /docker-entrypoint-initdb.d/100-schema.sql
+COPY --from=builder /app/db_customer/data.sql   /docker-entrypoint-initdb.d/200-data.sql

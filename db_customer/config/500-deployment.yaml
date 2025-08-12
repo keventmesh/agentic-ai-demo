@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-customer
+  namespace: keventmesh
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-customer
+  template:
+    metadata:
+      labels:
+        app: db-customer
+    spec:
+      containers:
+        - name: postgres
+          image: db-customer
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-customer-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-customer-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: db-customer-secret
+                  key: POSTGRES_DB
+            - name: LOGGING_LOG_LEVEL
+              value: "0"
+          ports:
+            - containerPort: 5432
+
+          imagePullPolicy: IfNotPresent
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB -h 127.0.0.1
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB -h 127.0.0.1
+            initialDelaySeconds: 10
+            periodSeconds: 20
