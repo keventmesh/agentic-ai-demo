@@ -7,28 +7,21 @@ Install pre-requisites:
 - Strimzi: https://strimzi.io/ OR using [install-200-strimzi.sh](hack/install-200-strimzi.sh)
 - Knative Eventing Kafka Broker: https://knative.dev/docs/eventing/brokers/broker-types/kafka-broker/ OR using [install-300-kn-kafka-broker.sh](hack/install-300-kn-kafka-broker.sh)
 
-Set up some environment variables in your shell:
+Copy the `.env.example` file to `.env` and fill in the required values.
+
+Then for building and pushing the images, run:
 
 ```shell
-export IMAGE_REGISTRY="docker.io/aliok"
-export IMAGE_TAG="latest"
+make build
 ```
 
-Build the images:
-```shell
-skaffold build --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}"
-```
-Run the application on Kubernetes:
+To deploy the services to your Kubernetes cluster, run:
 
 ```shell
-skaffold run --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}"
-# on Minikube/kind, you can use:
-# skaffold deploy --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}" --load-images=true
-# or, 2 steps:
-# skaffold render --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}" | kubectl apply -f -
+make deploy
 ```
 
-Send a request to the intake service:
+For sanity check, send a request to the intake service:
 
 ```shell
 # start Kubectl port-forward to access the service
@@ -58,17 +51,13 @@ kubectl port-forward -n keventmesh svc/ui-observer 9999:80
 Clean up the resources:
 
 ```shell
-skaffold delete
+make clean
 ```
 
-## Building and pushing images
+## Development setup
 
-```shell
-skaffold build --default-repo="${IMAGE_REGISTRY}" --tag="${IMAGE_TAG}" --push
-```
+Setup Python environment in your local machine:
 
-
-## Setup Python Environment
 ```shell
 pyenv install 3.11.9
 pyenv local 3.11.9
@@ -76,8 +65,6 @@ $(pyenv which python) -m venv venv
 source venv/bin/activate
 pip install --no-cache-dir .
 ```
-
-## How to run locally
 
 Each service has its own README file with instructions on how to run it locally.
 

@@ -4,5 +4,5 @@ metadata:
   name: svc-structure-processor
   namespace: keventmesh
 data:
-  apiBaseUrl: "http://192.168.2.160:11434/v1"
-  modelName: "gpt-oss:20b"
+  apiBaseUrl: "${STRUCTURE_PROCESSOR_API_BASE_URL}"
+  modelName: "${STRUCTURE_PROCESSOR_MODEL_NAME}"
