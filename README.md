@@ -9,6 +9,9 @@ Install pre-requisites:
 
 Copy the `.env.example` file to `.env` and fill in the required values.
 
+See [Models to use](#models-to-use) section for recommended models.
+See [Using with Ollama](#using-with-ollama) section for Ollama setup.
+
 Then for building and pushing the images, run:
 
 ```shell
@@ -53,6 +56,31 @@ Clean up the resources:
 ```shell
 make clean
 ```
+
+## Using with Ollama
+
+To use models via Ollama, you need the Kubernetes cluster to have access to the Ollama server.
+
+By default, Ollama will only listen localhost. You can make it listen on an external IP:
+
+```shell
+OLLAMA_HOST=1.2.3.4:11434 ollama serve
+```
+
+Then, adjust your `.env` file to point to the Ollama server (`/v1` at the end is important):
+
+```env
+STRUCTURE_PROCESSOR_API_BASE_URL=https://1.2.3.4:11434/v1
+...
+```
+
+## Models to use
+
+| Env Variable                   | Description                                                                            | Recommended Model         | Recommended Ollama Model |
+|--------------------------------|----------------------------------------------------------------------------------------|---------------------------|--------------------------|
+| STRUCTURE_PROCESSOR_MODEL_NAME | A model to process the structure of the text and fill in JSON. Should support tooling. | `granite-3-3-8b-instruct` | `granite3.3:8b`          |
+| GUARDIAN_PROCESSOR_MODEL_NAME  | A guardian model to evaluate the content of the text and return Yes/No output.         | `granite3-guardian-2b`    | `granite3-guardian:2b`   |
+
 
 ## Development setup
 
