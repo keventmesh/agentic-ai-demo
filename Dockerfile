@@ -1,5 +1,7 @@
 FROM python:3.11-slim AS builder
 
+RUN apt-get update && apt-get install -y libpq-dev gcc
+
 # Set the working directory
 WORKDIR /app
 
@@ -70,6 +72,24 @@ ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE ${PORT}
 CMD gunicorn --bind "0.0.0.0:${PORT}" "svc_guardian_processor.app:app"
 
+FROM python:3.11-slim as svc-customer-lookup
+
+RUN apt-get update && apt-get install -y libpq-dev gcc
+
+WORKDIR /app
+ENV PORT=8080
+# Set PYTHONPATH so Python can find the 'models' module from the root
+ENV PYTHONPATH="/app"
+
+# Copy the virtual environment with all dependencies installed
+COPY --from=builder /opt/venv /opt/venv
+# Copy the entire application source code
+COPY --from=builder /app .
+
+# Activate the venv
+ENV PATH="/opt/venv/bin:$PATH"
+EXPOSE ${PORT}
+CMD gunicorn --bind "0.0.0.0:${PORT}" "svc_customer_lookup.app:app"
 
 FROM python:3.11-slim as ui-observer
 WORKDIR /app
@@ -86,3 +106,8 @@ COPY --from=builder /app .
 ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE ${PORT}
 CMD gunicorn --worker-class gevent --workers 1 --timeout 0 --bind "0.0.0.0:${PORT}" "ui_observer.app:app"
+
+
+FROM postgres:16.4 as db-customer
+COPY --from=builder /app/db_customer/schema.sql /docker-entrypoint-initdb.d/100-schema.sql
+COPY --from=builder /app/db_customer/data.sql   /docker-entrypoint-initdb.d/200-data.sql

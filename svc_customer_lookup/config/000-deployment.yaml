@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svc-customer-lookup
+  namespace: keventmesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: svc-customer-lookup
+  template:
+    metadata:
+      labels:
+        app: svc-customer-lookup
+    spec:
+      containers:
+        - name: server
+          image: svc-customer-lookup:latest
+          env:
+            - name: PORT
+              value: "8080"
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: db-customer-secret
+                  key: host
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: db-customer-secret
+                  key: port
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-customer-secret
+                  key: db
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-customer-secret
+                  key: user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-customer-secret
+                  key: password
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
