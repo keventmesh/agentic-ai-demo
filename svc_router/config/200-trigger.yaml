@@ -1,0 +1,15 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: svc-router
+  namespace: keventmesh
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: com.example.triage.customer.found
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: svc-router
