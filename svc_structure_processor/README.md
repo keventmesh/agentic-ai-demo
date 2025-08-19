@@ -15,7 +15,6 @@ This service subscribes to `com.example.triage.intake.new` events from the Knati
 The service is configured using the following environment variables:
 
 -   **`PORT`**: The network port on which the web server will listen. (Default: `8080`)
--   **`K_SINK`**: The destination URL for outgoing CloudEvents, injected by Knative.
 -   **`LLM_API_BASE_URL`**: The base URL of the OpenAI-compatible inference server.
 -   **`LLM_API_KEY`**: The API key for the inference server (can be a dummy value for local models).
 -   **`LLM_MODEL_NAME`**: The name of the model to use for extraction.
@@ -26,13 +25,13 @@ The service is configured using the following environment variables:
 
 - Run the Flask application:
     ```bash
-     K_SINK=<your-Kafka-broker> PORT=8081 LLM_API_BASE_URL=<your-LLM-server> LLM_API_KEY=<your-LLM-api-key> LLM_MODEL_NAME=<your-LLM-model-name> python app.py
-    # e.g. K_SINK=https://keventmesh-agentic-demo.requestcatcher.com/structure-processor-output PORT=8080 LLM_API_BASE_URL="http://localhost:11434/v1" LLM_API_KEY="none" LLM_MODEL_NAME="gpt-oss:20b" python app.py
+     PORT=8081 LLM_API_BASE_URL=<your-LLM-server> LLM_API_KEY=<your-LLM-api-key> LLM_MODEL_NAME=<your-LLM-model-name> python app.py
+    # e.g. PORT=8080 LLM_API_BASE_URL="http://localhost:11434/v1" LLM_API_KEY="none" LLM_MODEL_NAME="gpt-oss:20b" python app.py
     ```
 
 -  In a new terminal, use `curl` to send a JSON payload to the service.
     ```bash
-    curl -X POST http://localhost:8081/ \
+    curl -i -X POST http://localhost:8081/ \
       -H "Content-Type: application/json" \
       -H "Ce-Specversion: 1.0" \
       -H "Ce-Type: com.example.triage.intake.new" \
@@ -55,51 +54,42 @@ The service is configured using the following environment variables:
     ```
 
 If successful, you will receive a response like:
-```json
-{"status":"success"}
-```
-
-This indicates the event has been successfully sent to the Broker.
-
-The event that's sent will look like this:
-```
-POST /structure-processor-output HTTP/1.1
-Host: keventmesh-agentic-demo.requestcatcher.com
-Accept: */*
-Accept-Encoding: gzip, deflate
-Ce-Id: 3a411e38-4493-4489-99c8-fc5455036222
-Ce-Source: /services/structure-processor
-Ce-Specversion: 1.0
-Ce-Subject: manual-message-67890
-Ce-Type: com.example.triage.structured
-Connection: keep-alive
-Content-Length: 805
+```text
+HTTP/1.1 200 OK
+Server: Werkzeug/3.1.3 Python/3.11.9
+Date: Tue, 19 Aug 2025 08:46:02 GMT
 Content-Type: application/json
-User-Agent: python-requests/2.32.3
-
+Content-Length: 901
+Ce-Specversion: 1.0
+Ce-Type: com.example.triage.structured
+Ce-Source: /services/structure-processor
+Ce-Id: 28f60682-b3aa-4867-bcf3-03ec3f44ea93
+Ce-Subject: manual-message-67890
+Connection: close
+```
+```json
 {
-    "message_id":"manual-message-67890",
-    "content":"Hello, my name is Jane Doe. I am writing because I am completely locked out of my account for the Gizmo-X product. I have tried the password reset link five times and it is not working. I am really frustrated because I have a deadline today and need to access my files. Can somehone please help me ASAP? My email is jane.doe@example.com.",
-    "metadata":{},
-    "timestamp":"2025-07-18T19:56:12.762422",
-    "structured":{
-        "reason":"Account locked out due to failed password reset attempts",
-        "sentiment":"frustrated",
-        "company_id":"",
-        "company_name":"Gizmo-X",
-        "customer_name":"Jane Doe",
-        "country":"",
-        "email_address":"jane.doe@example.com",
-        "phone":"",
-        "product_name":"Gizmo-X",
-        "escalate":true
-    },
-    "route":null,
-    "support":null,
-    "website":null,
-    "finance":null,
-    "comment":null,
-    "error":[]
+  "comment": null,
+  "content": "Hello, my name is Jane Doe. I am writing because I am completely locked out of my account for the Gizmo-X product. I have tried the password reset link five times and it is not working. I am really frustrated because I have a deadline today and need to access my files. Can someone please help me ASAP? My email is jane.doe@example.com.",
+  "error": [],
+  "finance": null,
+  "message_id": "manual-message-67890",
+  "metadata": {},
+  "route": null,
+  "structured": {
+    "company_id": null,
+    "company_name": null,
+    "country": null,
+    "customer_name": "Jane Doe",
+    "email_address": "jane.doe@example.com",
+    "escalate": true,
+    "phone": null,
+    "product_name": "Gizmo-X",
+    "reason": "account locked out, unable to reset password",
+    "sentiment": "negative"
+  },
+  "support": null,
+  "timestamp": "2025-07-18T19:56:12.762422",
+  "website": null
 }
 ```
-

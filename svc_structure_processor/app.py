@@ -1,7 +1,6 @@
 import os
 import uuid
 import logging
-import requests
 import instructor
 import httpx # Import httpx
 from flask import Flask, request, jsonify
@@ -21,13 +20,10 @@ logging.getLogger("openai").setLevel(logging.INFO) # Keep this at INFO
 logging.getLogger("httpx").setLevel(logging.DEBUG) # This will log the request
 
 APP_PORT = int(os.getenv("PORT", "8080"))
-K_SINK = os.getenv('K_SINK')
 LLM_API_BASE_URL = os.getenv('LLM_API_BASE_URL')
 LLM_API_KEY = os.getenv('LLM_API_KEY', "not-needed")
 LLM_MODEL_NAME = os.getenv('LLM_MODEL_NAME', "not-set")
 
-if not K_SINK:
-    raise SystemExit("K_SINK environment variable is not set.")
 if not LLM_API_BASE_URL:
     raise SystemExit("LLM_API_BASE_URL environment variable is not set.")
 
@@ -79,28 +75,6 @@ class MessageProcessor:
             message.error.append(error_msg)
         return message
 
-    def send_cloudevent(self, payload: dict, event_type: str, subject: str):
-        """Constructs and sends a CloudEvent to the configured K_SINK."""
-        event_id = str(uuid.uuid4())
-        headers = {
-            "Ce-Specversion": "1.0",
-            "Ce-Type": event_type,
-            "Ce-Source": "/services/structure-processor",
-            "Ce-Id": event_id,
-            "Ce-Subject": subject,
-            "Content-Type": "application/json",
-        }
-        try:
-            logging.info(f"[{subject}] - Sending event {event_id} with type {event_type}")
-            # We use model_dump_json() to correctly handle datetime objects
-            json_payload_string = OuterWrapper(**payload).model_dump_json()
-            response = requests.post(K_SINK, data=json_payload_string, headers=headers, timeout=15.0)
-            response.raise_for_status()
-            logging.info(f"[{subject}] - Event {event_id} accepted by Broker.")
-        except requests.exceptions.RequestException as e:
-            logging.error(f"[{subject}] - Failed to send event to Broker: {e}")
-            raise
-
 # --- Global Processor Instance ---
 processor = MessageProcessor()
 
@@ -112,8 +86,9 @@ def healthz():
 @app.route('/', methods=['POST'])
 def handle_event():
     """
-    This function acts as a single iteration of a consumer loop.
-    It receives an event, processes it, and sends a new event.
+    This function acts as the event handler using the request-reply pattern.
+    It receives an event, processes it, and replies with a new event in the
+    HTTP response, which Knative Eventing will then route.
     """
     if not request.is_json:
         return jsonify({"error": "Request must be application/json"}), 415
@@ -127,25 +102,37 @@ def handle_event():
         logging.error(f"Failed to parse incoming event payload: {e}")
         return jsonify({"error": "Bad request: payload does not match expected schema"}), 400
 
+    # Process the message to produce the data for the new event
     processed_wrapper = processor.process(incoming_wrapper)
 
-    try:
-        if processed_wrapper.structured:
-            event_type = "com.example.triage.structured"
-        else:
-            event_type = "com.example.triage.guardian-failed"
-            logging.warning(f"[{processed_wrapper.message_id}] - No structure extracted. Routing to failure path.")
+    # Determine the type of the event we are replying with
+    if processed_wrapper.structured:
+        event_type = "com.example.triage.structured"
+    else:
+        event_type = "com.example.triage.guardian-failed"
+        logging.warning(f"[{processed_wrapper.message_id}] - No structure extracted. Routing to failure path.")
 
-        processor.send_cloudevent(
-            payload=processed_wrapper.model_dump(),
-            event_type=event_type,
-            subject=processed_wrapper.message_id
-        )
-        return jsonify({"status": "success"}), 200
+    # Construct the CloudEvent headers for the HTTP response.
+    # Knative will interpret this HTTP response as a new event.
+    response_headers = {
+        "Ce-Specversion": "1.0",
+        "Ce-Type": event_type,
+        "Ce-Source": "/services/structure-processor",
+        "Ce-Id": str(uuid.uuid4()),
+        "Ce-Subject": processed_wrapper.message_id,
+    }
 
-    except Exception as e:
-        logging.error(f"[{processed_wrapper.message_id}] - A critical error occurred after processing: {e}")
-        return jsonify({"error": "Failed to forward processed event"}), 500
+    # The body of the response becomes the data payload of the new CloudEvent.
+    # We use model_dump(mode='json') to get a dict with JSON-compatible types.
+    # This correctly serializes datetime objects to ISO 8601 strings.
+    response_payload = processed_wrapper.model_dump(mode='json')
+
+    # By returning a payload and headers, we are sending a new event back
+    # to the Knative component (e.g., Broker) that sent the original request.
+    # jsonify will handle serializing the payload and setting the Content-Type.
+    logging.info(f"[{processed_wrapper.message_id}] - Replying with new event of type '{event_type}'.")
+    return jsonify(response_payload), 200, response_headers
+
 
 if __name__ == '__main__':
     logging.info(f"Service starting and listening on port {APP_PORT}")
