@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svc-router
+  namespace: keventmesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: svc-router
+  template:
+    metadata:
+      labels:
+        app: svc-router
+    spec:
+      containers:
+        - name: server
+          image: svc-router:latest
+          env:
+            - name: PORT
+              value: "8080"
+            - name: LLM_API_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: svc-router
+                  key: apiBaseUrl
+            - name: LLM_MODEL_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: svc-router
+                  key: modelName
+            - name: LLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: svc-router-llm-secret
+                  key: apiKey
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20

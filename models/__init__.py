@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional, Any, Dict
 from datetime import datetime
+from enum import Enum
 
 # This model defines the structured data we want the LLM to extract.
 class StructuredObject(BaseModel):
@@ -29,3 +30,14 @@ class OuterWrapper(BaseModel):
     finance: Optional[dict] = None
     comment: Optional[str] = None
     error: Optional[list] = Field(default_factory=list)
+
+class Route(str, Enum):
+    support = "support"
+    finance = "finance"
+    website = "website"
+    unknown = "unknown"
+
+class SelectedRoute(BaseModel):
+    route: Route
+    reason: str
+    escalation_required: bool

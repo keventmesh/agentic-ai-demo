@@ -80,6 +80,7 @@ STRUCTURE_PROCESSOR_API_BASE_URL=https://1.2.3.4:11434/v1
 |--------------------------------|----------------------------------------------------------------------------------------|---------------------------|--------------------------|
 | STRUCTURE_PROCESSOR_MODEL_NAME | A model to process the structure of the text and fill in JSON. Should support tooling. | `granite-3-3-8b-instruct` | `granite3.3:8b`          |
 | GUARDIAN_PROCESSOR_MODEL_NAME  | A guardian model to evaluate the content of the text and return Yes/No output.         | `granite3-guardian-2b`    | `granite3-guardian:2b`   |
+| ROUTER_MODEL_NAME              | A model to categorize the message.                                                     | `granite-3-3-8b-instruct` | `granite3.3:8b`          |
 
 
 ## Development setup

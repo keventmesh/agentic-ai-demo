@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: svc-router
+  namespace: keventmesh
+data:
+  apiBaseUrl: "${ROUTER_API_BASE_URL}"
+  modelName: "${ROUTER_MODEL_NAME}"
