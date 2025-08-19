@@ -73,7 +73,6 @@ manifests:
     - svc_customer_lookup/config/000-deployment.yaml
     - svc_customer_lookup/config/100-service.yaml
     - svc_customer_lookup/config/200-trigger.yaml
-    - svc_customer_lookup/config/300-sinkbinding.yaml
 
     - svc_router/config/000-deployment.yaml
     - svc_router/config/100-service.yaml

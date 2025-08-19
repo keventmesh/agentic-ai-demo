@@ -19,7 +19,6 @@ This service subscribes to events that have been successfully processed by the `
 The service is configured using the following environment variables:
 
 -   **`PORT`**: The network port on which the web server will listen. (Default: `8080`)
--   **`K_SINK`**: The destination URL for outgoing CloudEvents, injected by Knative.
 -   **`DB_HOST`**: The hostname or IP address of the PostgreSQL database server.
 -   **`DB_PORT`**: The port of the PostgreSQL database server. (Default: `5432`)
 -   **`DB_NAME`**: The name of the database to connect to.
@@ -34,11 +33,11 @@ The service is configured using the following environment variables:
 
 - Run the Flask application in a terminal, providing the necessary database credentials.
     ```bash
-    K_SINK=<your-Kafka-broker> PORT=8083 \
+    PORT=8083 \
     DB_HOST=localhost DB_PORT=5432 DB_NAME=customer DB_USER=postgres DB_PASSWORD=postgres \
     python app.py
-    # e.g.   K_SINK=http://broker-ingress.knative-eventing.svc.cluster.local                   PORT=8083 DB_HOST=localhost DB_PORT=5432 DB_NAME=customer DB_USER=postgres DB_PASSWORD=postgres python app.py
-    # or     K_SINK=https://keventmesh-agentic-demo.requestcatcher.com/customer-lookup-output  PORT=8083 DB_HOST=localhost DB_PORT=5432 DB_NAME=customer DB_USER=postgres DB_PASSWORD=postgres python app.py
+    # e.g.   PORT=8083 DB_HOST=localhost DB_PORT=5432 DB_NAME=customer DB_USER=postgres DB_PASSWORD=postgres python app.py
+    # or     PORT=8083 DB_HOST=localhost DB_PORT=5432 DB_NAME=customer DB_USER=postgres DB_PASSWORD=postgres python app.py
     ```
 
 -   In a new terminal, use `curl` to send a JSON payload to the service. The payload must simulate the output from the `structure-processor`, containing a `structured` object with an `email_address`.
@@ -80,7 +79,42 @@ curl -X POST http://localhost:8083/ \
   }'
 ```
 
-If successful, you will receive `{"status":"success"}`. The event sent to `K_SINK` will have the type `com.example.triage.customer.found` and the payload's `structured` field will be enriched with data from the database.
+If successful, you will receive an output like this:
+```text
+HTTP/1.1 200 OK
+...
+Ce-Type: com.example.triage.customer.found
+Ce-Source: /services/customer-lookup-processor
+Ce-Id: 4160c1d7-e203-489d-860e-47cc8b55c29e
+...
+```
+
+```json
+{
+  "comment": null,
+  "content": "Hello, my name is Jane Doe. I am writing because I am completely locked out of my account for the Gizmo-X product. I have tried the password reset link five times and it is not working. I am really frustrated because I have a deadline today and need to access my files. Can someone please help me ASAP? My email is jane.doe@example.com.",
+  "error": [],
+  "finance": null,
+  "message_id": "35bd56f4-7fe5-455f-bf82-2c4ec20d3ef5",
+  "metadata": {},
+  "route": null,
+  "structured": {
+    "company_id": "C-456",
+    "company_name": "Acme Corp.",
+    "country": "USA",
+    "customer_name": "Jane Doe",
+    "email_address": "jane.doe@example.com",
+    "escalate": false,
+    "phone": "1-800-555-4567",
+    "product_name": "Gizmo-X",
+    "reason": "Locked out of account with unsuccessful reset attempts",
+    "sentiment": "negative"
+  },
+  "support": null,
+  "timestamp": "2025-08-19T10:09:20.895425",
+  "website": null
+}
+```
 
 ### Example 2: Customer Not Found (Review Required)
 
@@ -118,12 +152,22 @@ curl -X POST http://localhost:8083/ \
   }'
 ```
 
-You will still receive `{"status":"success"}`. The event sent to `K_SINK` will now have the type `com.example.triage.review.required`, and the payload will contain an error:
+If successful, you will receive an output like this, and the payload will contain an error:
+```text
+HTTP/1.1 200 OK
+...
+Ce-Type: com.example.triage.review.required
+Ce-Source: /services/customer-lookup-processor
+Ce-Id: 4160c1d7-e203-489d-860e-47cc8b55c29e
+...
+```
+
 ```json
 {
-    "message_id": "test-message-notfound",
-    "content": "...",
-    "structured": { "..."},
-    "error": ["customer-lookup:not-found"]
+  ...
+  "error": [
+    "customer-lookup:not-found"
+  ],
+  ...
 }
 ```
