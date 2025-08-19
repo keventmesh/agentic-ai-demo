@@ -1,7 +1,6 @@
 import os
 import uuid
 import logging
-import requests
 import httpx # Import httpx
 from flask import Flask, request, jsonify
 from openai import OpenAI
@@ -20,13 +19,10 @@ logging.getLogger("openai").setLevel(logging.INFO) # Keep this at INFO
 logging.getLogger("httpx").setLevel(logging.DEBUG) # This will log the request
 
 APP_PORT = int(os.getenv("PORT", "8080"))
-K_SINK = os.getenv('K_SINK')
 LLM_API_BASE_URL = os.getenv('LLM_API_BASE_URL')
 LLM_API_KEY = os.getenv('LLM_API_KEY', "not-needed")
 LLM_MODEL_NAME = os.getenv('LLM_MODEL_NAME', "not-set")
 
-if not K_SINK:
-    raise SystemExit("K_SINK environment variable is not set.")
 if not LLM_API_BASE_URL:
     raise SystemExit("LLM_API_BASE_URL environment variable is not set.")
 
@@ -94,28 +90,6 @@ class MessageProcessor:
 
         return message
 
-    def send_cloudevent(self, payload: dict, event_type: str, subject: str):
-        """Constructs and sends a CloudEvent to the configured K_SINK."""
-        event_id = str(uuid.uuid4())
-        headers = {
-            "Ce-Specversion": "1.0",
-            "Ce-Type": event_type,
-            "Ce-Source": "/services/guardian-processor",
-            "Ce-Id": event_id,
-            "Ce-Subject": subject,
-            "Content-Type": "application/json",
-        }
-        try:
-            logging.info(f"[{subject}] - Sending event {event_id} with type {event_type}")
-            # We use model_dump_json() to correctly handle datetime objects
-            json_payload_string = OuterWrapper(**payload).model_dump_json()
-            response = requests.post(K_SINK, data=json_payload_string, headers=headers, timeout=15.0)
-            response.raise_for_status()
-            logging.info(f"[{subject}] - Event {event_id} accepted by Broker.")
-        except requests.exceptions.RequestException as e:
-            logging.error(f"[{subject}] - Failed to send event to Broker: {e}")
-            raise
-
 # --- Global Processor Instance ---
 processor = MessageProcessor()
 
@@ -127,8 +101,8 @@ def healthz():
 @app.route('/', methods=['POST'])
 def handle_event():
     """
-    Receives an event, processes it through the guardian, and sends a new event
-    indicating whether it passed or needs review.
+    Receives an event, processes it through the guardian, and replies with a
+    new event indicating whether it passed or needs review.
     """
     if not request.is_json:
         return jsonify({"error": "Request must be application/json"}), 415
@@ -146,25 +120,30 @@ def handle_event():
 
     processed_wrapper = processor.process(incoming_wrapper)
 
-    try:
-        # Check if the guardian added any new errors
-        if len(processed_wrapper.error) > original_error_count:
-            event_type = "com.example.triage.review.required"
-            logging.warning(f"[{processed_wrapper.message_id}] - Guardian detected issues. Routing for review.")
-        else:
-            event_type = "com.example.triage.guardian.passed"
-            logging.info(f"[{processed_wrapper.message_id}] - Guardian checks passed. Routing for structuring.")
+    # Check if the guardian added any new errors
+    if len(processed_wrapper.error) > original_error_count:
+        event_type = "com.example.triage.review.required"
+        logging.warning(f"[{processed_wrapper.message_id}] - Guardian detected issues. Routing for review.")
+    else:
+        event_type = "com.example.triage.guardian.passed"
+        logging.info(f"[{processed_wrapper.message_id}] - Guardian checks passed. Routing for structuring.")
 
-        processor.send_cloudevent(
-            payload=processed_wrapper.model_dump(),
-            event_type=event_type,
-            subject=processed_wrapper.message_id
-        )
-        return jsonify({"status": "success"}), 200
+    # Construct the CloudEvent headers for the HTTP response.
+    response_headers = {
+        "Ce-Specversion": "1.0",
+        "Ce-Type": event_type,
+        "Ce-Source": "/services/guardian-processor", # Updated source
+        "Ce-Id": str(uuid.uuid4()),
+        "Ce-Subject": processed_wrapper.message_id,
+    }
 
-    except Exception as e:
-        logging.error(f"[{processed_wrapper.message_id}] - A critical error occurred after processing: {e}")
-        return jsonify({"error": "Failed to forward processed event"}), 500
+    # The body of the response becomes the data payload of the new CloudEvent.
+    response_payload = processed_wrapper.model_dump(mode='json')
+
+    # Reply directly with the new event payload and headers.
+    logging.info(f"[{processed_wrapper.message_id}] - Replying with new event of type '{event_type}'.")
+    return jsonify(response_payload), 200, response_headers
+
 
 if __name__ == '__main__':
     logging.info(f"Service starting and listening on port {APP_PORT}")

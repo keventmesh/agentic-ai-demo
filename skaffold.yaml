@@ -67,9 +67,8 @@ manifests:
     - svc_guardian_processor/config/000-deployment.yaml
     - svc_guardian_processor/config/100-service.yaml
     - svc_guardian_processor/config/200-trigger.yaml
-    - svc_guardian_processor/config/300-sinkbinding.yaml
-    - svc_guardian_processor/config/400-configmap.yaml
-    - svc_guardian_processor/config/410-llm-api-key-secret.yaml
+    - svc_guardian_processor/config/300-configmap.yaml
+    - svc_guardian_processor/config/310-llm-api-key-secret.yaml
 
     - svc_customer_lookup/config/000-deployment.yaml
     - svc_customer_lookup/config/100-service.yaml
