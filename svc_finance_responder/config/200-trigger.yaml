@@ -1,0 +1,15 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: svc-finance-responder
+  namespace: keventmesh
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: com.example.triage.routed.finance
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: svc-finance-responder
