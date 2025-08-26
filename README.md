@@ -24,7 +24,9 @@ To deploy the services to your Kubernetes cluster, run:
 make deploy
 ```
 
-For sanity check, send a request to the intake service:
+### Sanity Check
+
+Send a generic request to the intake service to start the event flow:
 
 ```shell
 # start Kubectl port-forward to access the service
@@ -44,12 +46,38 @@ You should receive a response like this:
 {"eventId":"9b78c13a-9c38-42c7-84fa-615f45add5af","status":"event accepted"}
 ```
 
-You can watch the events being processed by the services using the `ui_observer` service:
+### Viewing the Full Event Flow
+
+You can watch all events being processed by the services using the `ui_observer` service:
 
 ```shell
 kubectl port-forward -n keventmesh svc/ui-observer 9999:80
 # Then open your browser to http://localhost:9999
 ```
+
+### Viewing the Finance Inbox
+
+If your messages is a finance related one, you can see it in the finance inbox (no inboxes available currently for other message kinds):
+
+1.  Port-forward the finance responder service:
+    ```shell
+    kubectl port-forward -n keventmesh svc/svc-finance-responder 8888:80
+    ```
+
+2.  Open your browser to **http://localhost:8888**.
+
+3.  In a separate terminal, send a new, finance-related message to the intake service (which should still be port-forwarded on 8080 from the first step):
+    ```shell
+    curl -X POST http://localhost:8080/ \
+      -H "Content-Type: application/json" \
+      -d '{
+        "content": "Hi, I need to dispute a charge on my last invoice, #INV-2025-07. I believe I was overcharged for the premium subscription tier. Can you please look into this and issue a refund? My account email is john.smith@globaltech.com. Thanks, John."
+        }
+      '
+    ```
+    You will see the message appear in the Finance Inbox in your browser in real-time.
+
+### Clean up
 
 Clean up the resources:
 
@@ -96,5 +124,3 @@ pip install --no-cache-dir .
 ```
 
 Each service has its own README file with instructions on how to run it locally.
-
-TODO: Postgres, ChromaDB, Ollama

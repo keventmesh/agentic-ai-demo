@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Inbox</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+            margin: 0;
+            padding: 20px;
+        }
+        header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #dee2e6; padding-bottom: 20px; }
+        h1, h2 { color: #343a40; }
+        main, #archived-section {
+            max-width: 960px;
+            margin: 20px auto;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            padding: 0;
+        }
+        #archived-section {
+            margin-top: 40px;
+            display: none; /* Initially hidden */
+        }
+        #archived-section h2 {
+            padding: 15px 20px;
+            margin: 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .message-item {
+            border-bottom: 1px solid #e9ecef;
+        }
+        .message-item:last-child {
+            border-bottom: none;
+        }
+        .message-summary {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: start;
+            gap: 20px;
+            transition: background-color 0.2s ease;
+        }
+        .message-summary:hover {
+            background-color: #f1f3f5;
+        }
+        .message-summary.active {
+            background-color: #e9ecef;
+        }
+        .summary-main .sender {
+            font-weight: 600;
+            color: #000;
+        }
+        .summary-main .company-name {
+            font-weight: 400;
+            color: #6c757d;
+            margin-left: 5px;
+        }
+        .summary-main .subject {
+            font-weight: 500;
+            color: #495057;
+            margin: 4px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .summary-main .content-snippet {
+            font-size: 0.9em;
+            color: #6c757d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .summary-meta {
+            text-align: right;
+            font-size: 0.85em;
+            color: #6c757d;
+            white-space: nowrap;
+        }
+        .summary-meta .timestamp {
+            margin-bottom: 5px;
+        }
+        .escalated-tag {
+            background-color: #dc3545;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .message-details {
+            display: none;
+            padding: 20px;
+            background-color: #fafafa;
+            border-top: 1px solid #e9ecef;
+        }
+        .message-body {
+            font-size: 1em;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .structured-details {
+            margin-top: 20px;
+        }
+        .structured-details h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .structured-details pre {
+            background-color: #e9ecef;
+            color: #212529;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .message-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .message-id {
+            font-family: monospace;
+            font-size: 0.8em;
+            color: #adb5bd;
+        }
+        .archive-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .archive-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Finance Department Inbox</h1>
+    <p>New messages routed for financial review will appear here in real-time.</p>
+</header>
+<main id="inbox-container"></main>
+
+<section id="archived-section">
+    <h2>Archived Items</h2>
+    <div id="archived-container"></div>
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const inboxContainer = document.getElementById("inbox-container");
+        const archivedSection = document.getElementById("archived-section");
+        const archivedContainer = document.getElementById("archived-container");
+        const eventSource = new EventSource("/stream");
+
+        eventSource.addEventListener("finance_message", function(event) {
+            const data = JSON.parse(event.data);
+            const { message_id, content, structured, timestamp } = data;
+
+            // --- Safely extract data with defaults ---
+            const senderName = structured?.customer_name || 'Unknown Sender';
+            const companyName = structured?.company_name || '';
+            const subject = structured?.reason || 'No Subject';
+            const isEscalated = structured?.escalate === true;
+            const formattedTimestamp = new Date(timestamp).toLocaleString();
+
+            // --- Generate content snippet ---
+            const snippetLength = 100;
+            let contentSnippet = content.substring(0, snippetLength);
+            if (content.length > snippetLength) {
+                contentSnippet += "...";
+            }
+
+            // Create a JSON string of just the structured data for display
+            const structuredDetailsJson = JSON.stringify(structured, null, 2);
+
+            // --- Create the message elements ---
+            const messageItem = document.createElement("div");
+            messageItem.className = "message-item";
+            messageItem.id = message_id;
+
+            messageItem.innerHTML = `
+                <div class="message-summary">
+                    <div class="summary-main">
+                        <div class="sender">
+                            ${senderName}
+                            ${companyName ? `<span class="company-name">(${companyName})</span>` : ''}
+                        </div>
+                        <div class="subject">${subject}</div>
+                        <div class="content-snippet">${contentSnippet}</div>
+                    </div>
+                    <div class="summary-meta">
+                        <div class="timestamp">${formattedTimestamp}</div>
+                        ${isEscalated ? '<div class="escalated-tag">ESCALATED</div>' : ''}
+                    </div>
+                </div>
+                <div class="message-details">
+                    <div class="message-body">${content}</div>
+                    <div class="structured-details">
+                        <h4>Structured Data</h4>
+                        <pre>${structuredDetailsJson}</pre>
+                    </div>
+                    <div class="message-footer">
+                        <button class="archive-button">Archive</button>
+                        <div class="message-id">Message ID: ${message_id}</div>
+                    </div>
+                </div>
+            `;
+
+            // --- Add interactivity ---
+            const summary = messageItem.querySelector('.message-summary');
+            const details = messageItem.querySelector('.message-details');
+            const archiveButton = messageItem.querySelector('.archive-button');
+
+            summary.addEventListener('click', () => {
+                const isVisible = details.style.display === 'block';
+                details.style.display = isVisible ? 'none' : 'block';
+                summary.classList.toggle('active', !isVisible);
+            });
+
+            archiveButton.addEventListener('click', () => {
+                // Move the message item to the archived container
+                archivedContainer.prepend(messageItem);
+                // Ensure the archived section is visible
+                archivedSection.style.display = 'block';
+                // Collapse the details view for a compact archive
+                details.style.display = 'none';
+                summary.classList.remove('active');
+            });
+
+            // Prepend to show the newest message at the top
+            inboxContainer.prepend(messageItem);
+        });
+
+        eventSource.onerror = function(err) {
+            console.error("EventSource failed:", err);
+        };
+    });
+</script>
+</body>
+</html>

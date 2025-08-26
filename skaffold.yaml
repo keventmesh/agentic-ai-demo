@@ -35,6 +35,11 @@ build:
         dockerfile: Dockerfile
         target: svc-router
 
+    - image: svc-finance-responder
+      docker:
+        dockerfile: Dockerfile
+        target: svc-finance-responder
+
     - image: ui-observer
       docker:
         dockerfile: Dockerfile
@@ -79,6 +84,10 @@ manifests:
     - svc_router/config/200-trigger.yaml
     - svc_router/config/300-configmap.yaml
     - svc_router/config/310-llm-api-key-secret.yaml
+
+    - svc_finance_responder/config/000-deployment.yaml
+    - svc_finance_responder/config/100-service.yaml
+    - svc_finance_responder/config/200-trigger.yaml
 
     - ui_observer/config/000-deployment.yaml
     - ui_observer/config/100-service.yaml
