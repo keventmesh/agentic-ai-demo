@@ -13,15 +13,24 @@
             padding: 20px;
         }
         header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #dee2e6; padding-bottom: 20px; }
-        h1 { color: #343a40; }
-        #inbox-container {
+        h1, h2 { color: #343a40; }
+        main, #archived-section {
             max-width: 960px;
-            margin: 0 auto;
+            margin: 20px auto;
             background-color: #fff;
             border: 1px solid #dee2e6;
             border-radius: 8px;
             box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
             padding: 0;
+        }
+        #archived-section {
+            margin-top: 40px;
+            display: none; /* Initially hidden */
+        }
+        #archived-section h2 {
+            padding: 15px 20px;
+            margin: 0;
+            border-bottom: 1px solid #e9ecef;
         }
         .message-item {
             border-bottom: 1px solid #e9ecef;
@@ -74,7 +83,7 @@
         }
         .message-details {
             display: none;
-            padding: 0 20px 20px 20px;
+            padding: 20px;
             background-color: #fafafa;
             border-top: 1px solid #e9ecef;
         }
@@ -86,7 +95,6 @@
             padding: 15px;
             border-radius: 5px;
             border: 1px solid #dee2e6;
-            margin-top: 15px;
         }
         .structured-details {
             margin-top: 20px;
@@ -109,12 +117,29 @@
             max-height: 250px;
             overflow-y: auto;
         }
+        .message-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
         .message-id {
             font-family: monospace;
             font-size: 0.8em;
             color: #adb5bd;
-            margin-top: 15px;
-            text-align: right;
+        }
+        .archive-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .archive-button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
@@ -125,9 +150,16 @@
 </header>
 <main id="inbox-container"></main>
 
+<section id="archived-section">
+    <h2>Archived Items</h2>
+    <div id="archived-container"></div>
+</section>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const container = document.getElementById("inbox-container");
+        const inboxContainer = document.getElementById("inbox-container");
+        const archivedSection = document.getElementById("archived-section");
+        const archivedContainer = document.getElementById("archived-container");
         const eventSource = new EventSource("/stream");
 
         eventSource.addEventListener("finance_message", function(event) {
@@ -140,13 +172,13 @@
             const isEscalated = structured?.escalate === true;
             const formattedTimestamp = new Date(timestamp).toLocaleString();
 
+            // Create a JSON string of just the structured data for display
+            const structuredDetailsJson = JSON.stringify(structured, null, 2);
+
             // --- Create the message elements ---
             const messageItem = document.createElement("div");
             messageItem.className = "message-item";
             messageItem.id = message_id;
-
-            // Create a JSON string of just the structured data for display
-            const structuredDetailsJson = JSON.stringify(structured, null, 2);
 
             messageItem.innerHTML = `
                 <div class="message-summary">
@@ -165,13 +197,17 @@
                         <h4>Structured Data</h4>
                         <pre>${structuredDetailsJson}</pre>
                     </div>
-                    <div class="message-id">Message ID: ${message_id}</div>
+                    <div class="message-footer">
+                        <button class="archive-button">Archive</button>
+                        <div class="message-id">Message ID: ${message_id}</div>
+                    </div>
                 </div>
             `;
 
             // --- Add interactivity ---
             const summary = messageItem.querySelector('.message-summary');
             const details = messageItem.querySelector('.message-details');
+            const archiveButton = messageItem.querySelector('.archive-button');
 
             summary.addEventListener('click', () => {
                 const isVisible = details.style.display === 'block';
@@ -179,8 +215,18 @@
                 summary.classList.toggle('active', !isVisible);
             });
 
+            archiveButton.addEventListener('click', () => {
+                // Move the message item to the archived container
+                archivedContainer.prepend(messageItem);
+                // Ensure the archived section is visible
+                archivedSection.style.display = 'block';
+                // Collapse the details view for a compact archive
+                details.style.display = 'none';
+                summary.classList.remove('active');
+            });
+
             // Prepend to show the newest message at the top
-            container.prepend(messageItem);
+            inboxContainer.prepend(messageItem);
         });
 
         eventSource.onerror = function(err) {
