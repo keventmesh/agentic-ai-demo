@@ -1,36 +1,28 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: serving.knative.dev/v1
+kind: Service
 metadata:
   name: svc-finance-responder
   namespace: keventmesh
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: svc-finance-responder
   template:
     metadata:
       labels:
         app: svc-finance-responder
     spec:
       containers:
-        - name: server
+        - name: user-container
           image: svc-finance-responder:latest
           env:
             - name: PORT
               value: "8080"
           ports:
             - containerPort: 8080
-          imagePullPolicy: Always
+              name: http1
           readinessProbe:
             httpGet:
               path: /healthz
               port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /healthz
               port: 8080
-            initialDelaySeconds: 15
-            periodSeconds: 20

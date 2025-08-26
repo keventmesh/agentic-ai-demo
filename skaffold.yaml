@@ -59,38 +59,31 @@ manifests:
     - db_customer/config/500-deployment.yaml
     - db_customer/config/600-service.yaml
 
-    - svc_intake/config/000-deployment.yaml
-    - svc_intake/config/100-service.yaml
+    - svc_intake/config/100-ksvc.yaml
     - svc_intake/config/200-sinkbinding.yaml
 
-    - svc_structure_processor/config/000-deployment.yaml
-    - svc_structure_processor/config/100-service.yaml
+    - svc_structure_processor/config/100-ksvc.yaml
     - svc_structure_processor/config/200-trigger.yaml
     - svc_structure_processor/config/300-configmap.yaml
     - svc_structure_processor/config/310-llm-api-key-secret.yaml
 
-    - svc_guardian_processor/config/000-deployment.yaml
-    - svc_guardian_processor/config/100-service.yaml
+    - svc_guardian_processor/config/100-ksvc.yaml
     - svc_guardian_processor/config/200-trigger.yaml
     - svc_guardian_processor/config/300-configmap.yaml
     - svc_guardian_processor/config/310-llm-api-key-secret.yaml
 
-    - svc_customer_lookup/config/000-deployment.yaml
-    - svc_customer_lookup/config/100-service.yaml
+    - svc_customer_lookup/config/100-ksvc.yaml
     - svc_customer_lookup/config/200-trigger.yaml
 
-    - svc_router/config/000-deployment.yaml
-    - svc_router/config/100-service.yaml
+    - svc_router/config/100-ksvc.yaml
     - svc_router/config/200-trigger.yaml
     - svc_router/config/300-configmap.yaml
     - svc_router/config/310-llm-api-key-secret.yaml
 
-    - svc_finance_responder/config/000-deployment.yaml
-    - svc_finance_responder/config/100-service.yaml
+    - svc_finance_responder/config/100-ksvc.yaml
     - svc_finance_responder/config/200-trigger.yaml
 
-    - ui_observer/config/000-deployment.yaml
-    - ui_observer/config/100-service.yaml
+    - ui_observer/config/100-ksvc.yaml
     - ui_observer/config/200-trigger.yaml
 
 deploy:

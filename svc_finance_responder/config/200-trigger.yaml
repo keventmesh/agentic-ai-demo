@@ -10,6 +10,6 @@ spec:
       type: com.example.triage.routed.finance
   subscriber:
     ref:
-      apiVersion: v1
+      apiVersion: serving.knative.dev/v1
       kind: Service
       name: svc-finance-responder
