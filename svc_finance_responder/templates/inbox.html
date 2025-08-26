@@ -7,58 +7,112 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f7f9;
-            color: #333;
+            background-color: #f8f9fa;
+            color: #212529;
             margin: 0;
             padding: 20px;
         }
-        header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e0e0e0; padding-bottom: 20px; }
-        h1 { color: #2c3e50; }
+        header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #dee2e6; padding-bottom: 20px; }
+        h1 { color: #343a40; }
         #inbox-container {
-            display: flex;
-            flex-direction: column;
+            max-width: 960px;
+            margin: 0 auto;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            padding: 0;
+        }
+        .message-item {
+            border-bottom: 1px solid #e9ecef;
+        }
+        .message-item:last-child {
+            border-bottom: none;
+        }
+        .message-summary {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: 1fr auto;
             align-items: center;
             gap: 20px;
+            transition: background-color 0.2s ease;
         }
-        .message-card {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-left: 5px solid #e67e22; /* Finance color */
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-            width: 90%;
-            max-width: 900px;
-            padding: 20px;
-            box-sizing: border-box;
+        .message-summary:hover {
+            background-color: #f1f3f5;
         }
-        .message-header {
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
+        .message-summary.active {
+            background-color: #e9ecef;
         }
-        .message-header h3 {
-            font-size: 1.1em;
-            margin: 0 0 5px 0;
-            color: #34495e;
+        .summary-main .sender {
+            font-weight: 600;
+            color: #000;
         }
-        .message-header p {
-            font-size: 0.9em;
-            color: #7f8c8d;
-            margin: 0;
+        .summary-main .subject {
+            color: #495057;
+            margin: 2px 0 0 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .summary-meta {
+            text-align: right;
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+        .summary-meta .timestamp {
+            margin-bottom: 5px;
+        }
+        .escalated-tag {
+            background-color: #dc3545;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .message-details {
+            display: none;
+            padding: 0 20px 20px 20px;
+            background-color: #fafafa;
+            border-top: 1px solid #e9ecef;
         }
         .message-body {
             font-size: 1em;
             line-height: 1.6;
-            white-space: pre-wrap; /* Preserve whitespace and newlines */
-            background-color: #fdfefe;
+            white-space: pre-wrap;
+            background-color: #fff;
             padding: 15px;
             border-radius: 5px;
-            border: 1px solid #ecf0f1;
+            border: 1px solid #dee2e6;
+            margin-top: 15px;
+        }
+        .structured-details {
+            margin-top: 20px;
+        }
+        .structured-details h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .structured-details pre {
+            background-color: #e9ecef;
+            color: #212529;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 250px;
+            overflow-y: auto;
         }
         .message-id {
             font-family: monospace;
             font-size: 0.8em;
-            color: #95a5a6;
+            color: #adb5bd;
             margin-top: 15px;
             text-align: right;
         }
@@ -76,35 +130,61 @@
         const container = document.getElementById("inbox-container");
         const eventSource = new EventSource("/stream");
 
-        // Listen for events specifically named 'finance_message'
         eventSource.addEventListener("finance_message", function(event) {
             const data = JSON.parse(event.data);
-            const { message_id, content, structured } = data;
+            const { message_id, content, structured, timestamp } = data;
 
-            const customerName = structured?.customer_name || 'N/A';
-            const customerEmail = structured?.email_address || 'N/A';
-            const companyName = structured?.company_name || 'Unknown Company';
+            // --- Safely extract data with defaults ---
+            const senderName = structured?.customer_name || 'Unknown Sender';
+            const subject = structured?.reason || 'No Subject';
+            const isEscalated = structured?.escalate === true;
+            const formattedTimestamp = new Date(timestamp).toLocaleString();
 
-            const card = document.createElement("div");
-            card.className = "message-card";
-            card.id = message_id;
+            // --- Create the message elements ---
+            const messageItem = document.createElement("div");
+            messageItem.className = "message-item";
+            messageItem.id = message_id;
 
-            card.innerHTML = `
-                <div class="message-header">
-                    <h3>From: ${customerName} &lt;${customerEmail}&gt;</h3>
-                    <p>Company: ${companyName}</p>
+            // Create a JSON string of just the structured data for display
+            const structuredDetailsJson = JSON.stringify(structured, null, 2);
+
+            messageItem.innerHTML = `
+                <div class="message-summary">
+                    <div class="summary-main">
+                        <div class="sender">${senderName}</div>
+                        <div class="subject">${subject}</div>
+                    </div>
+                    <div class="summary-meta">
+                        <div class="timestamp">${formattedTimestamp}</div>
+                        ${isEscalated ? '<div class="escalated-tag">ESCALATED</div>' : ''}
+                    </div>
                 </div>
-                <div class="message-body">${content}</div>
-                <div class="message-id">Message ID: ${message_id}</div>
+                <div class="message-details">
+                    <div class="message-body">${content}</div>
+                    <div class="structured-details">
+                        <h4>Structured Data</h4>
+                        <pre>${structuredDetailsJson}</pre>
+                    </div>
+                    <div class="message-id">Message ID: ${message_id}</div>
+                </div>
             `;
 
+            // --- Add interactivity ---
+            const summary = messageItem.querySelector('.message-summary');
+            const details = messageItem.querySelector('.message-details');
+
+            summary.addEventListener('click', () => {
+                const isVisible = details.style.display === 'block';
+                details.style.display = isVisible ? 'none' : 'block';
+                summary.classList.toggle('active', !isVisible);
+            });
+
             // Prepend to show the newest message at the top
-            container.prepend(card);
+            container.prepend(messageItem);
         });
 
         eventSource.onerror = function(err) {
             console.error("EventSource failed:", err);
-            // Optionally add a visual indicator for connection status
         };
     });
 </script>

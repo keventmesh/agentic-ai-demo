@@ -2,17 +2,19 @@
 
 This service acts as a simple, real-time "inbox" for the finance department. It subscribes to events that have been routed for financial review (i.e., type `com.example.triage.routed.finance`) and displays them in a web UI.
 
-## Architecture
+## Architecture & UI Features
 
 This service is designed for demonstration purposes and uses the same real-time push architecture as the `ui_observer` service.
 
 1.  **Event Subscription:** A Knative `Trigger` is configured to subscribe *only* to events of type `com.example.triage.routed.finance`.
 
-2.  **Backend (Flask):** The `app.py` receives the incoming CloudEvents. It does not process them but immediately relays the event's payload to the UI.
+2.  **Backend (Flask):** The `app.py` receives the incoming CloudEvents. It does not process them but immediately relays the event's payload to the UI via Server-Sent Events (SSE).
 
-3.  **Real-time Push (SSE):** The backend publishes the message data to a Server-Sent Events (SSE) stream on the `/stream` endpoint. All connected web clients receive this data instantly.
-
-4.  **Frontend (HTML/JavaScript):** The `inbox.html` page connects to the `/stream`. When it receives a new message, it dynamically adds it to the top of the inbox list, providing a real-time view of incoming financial queries.
+3.  **Frontend (HTML/JavaScript):** The `inbox.html` page provides an interactive, "Gmail-like" user interface with the following features:
+    *   **Real-time Updates:** New messages appear at the top of the inbox instantly without needing a page refresh.
+    *   **Accordion View:** Each message is initially shown as a compact summary (sender, subject, timestamp).
+    *   **Expandable Details:** Clicking a message summary expands it to reveal the full message content and a formatted view of all the structured data extracted by the AI.
+    *   **Visual Alerts:** Messages flagged for escalation are clearly marked with a red **"ESCALATED"** tag, allowing for immediate prioritization.
 
 ## Configuration
 
@@ -64,7 +66,7 @@ You can run and test this service in isolation without deploying the full system
         "metadata": {},
         "timestamp": "2025-08-20T10:00:00.000000",
         "structured": {
-            "reason": "Billing dispute",
+            "reason": "Billing dispute on invoice #INV-2025-07",
             "sentiment": "negative",
             "company_id": "C-123",
             "company_name": "Global Tech Inc.",
@@ -84,4 +86,4 @@ You can run and test this service in isolation without deploying the full system
       }'
     ```
 
-5.  After running the `curl` command, you should instantly see a new message appear in the inbox in your browser.
+5.  After running the `curl` command, you should instantly see a new message summary appear in the inbox. Click on it to expand and see the full details.
