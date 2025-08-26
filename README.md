@@ -1,9 +1,9 @@
-
 ## Running on Kubernetes
 
 Install pre-requisites:
 - Skaffold: https://skaffold.dev/docs/install/
 - Knative Eventing: https://knative.dev/docs/install/ OR using [install-100-knative-eventing.sh](hack/install-100-knative-eventing.sh)
+- Knative Serving: https://knative.dev/docs/install/ OR using [install-150-knative-serving.sh](hack/install-150-knative-serving.sh)
 - Strimzi: https://strimzi.io/ OR using [install-200-strimzi.sh](hack/install-200-strimzi.sh)
 - Knative Eventing Kafka Broker: https://knative.dev/docs/eventing/brokers/broker-types/kafka-broker/ OR using [install-300-kn-kafka-broker.sh](hack/install-300-kn-kafka-broker.sh)
 
