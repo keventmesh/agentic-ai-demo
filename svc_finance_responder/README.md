@@ -11,11 +11,11 @@ This service is designed for demonstration purposes and uses the same real-time 
 2.  **Backend (Flask):** The `app.py` receives the incoming CloudEvents. It does not process them but immediately relays the event's payload to the UI via Server-Sent Events (SSE).
 
 3.  **Frontend (HTML/JavaScript):** The `inbox.html` page provides an interactive, "Gmail-like" user interface with the following features:
-    *   **Real-time Updates:** New messages appear at the top of the inbox instantly without needing a page refresh.
-    *   **Accordion View:** Each message is initially shown as a compact summary (sender, subject, timestamp).
+    *   **Real-time Updates:** New messages appear at the top of the inbox instantly.
+    *   **Rich Summary View:** Each message is shown as a compact summary that includes the sender, company, subject, and a snippet of the message body, allowing for quick scanning without clicking.
     *   **Expandable Details:** Clicking a message summary expands it to reveal the full message content and a formatted view of all the structured data extracted by the AI.
     *   **Visual Alerts:** Messages flagged for escalation are clearly marked with a red **"ESCALATED"** tag.
-    *   **Archive Functionality:** An "Archive" button allows you to move a message from the main inbox to an "Archived Items" section, keeping the primary view clean and focused on actionable items. This state is client-side and resets on page refresh.
+    *   **Archive Functionality:** An "Archive" button moves a message from the main inbox to an "Archived Items" section, keeping the primary view clean. This state is client-side and resets on page refresh.
 
 ## Configuration
 
@@ -87,4 +87,4 @@ You can run and test this service in isolation without deploying the full system
       }'
     ```
 
-5.  After running the `curl` command, you should instantly see a new message summary. Click to expand it, and then click the "Archive" button to see it move to the archived section.
+5.  After running the `curl` command, you should instantly see the message summary. Click to expand it, and then click the "Archive" button to see it move to the archived section.

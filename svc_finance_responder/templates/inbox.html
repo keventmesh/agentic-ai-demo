@@ -43,7 +43,7 @@
             cursor: pointer;
             display: grid;
             grid-template-columns: 1fr auto;
-            align-items: center;
+            align-items: start;
             gap: 20px;
             transition: background-color 0.2s ease;
         }
@@ -57,9 +57,22 @@
             font-weight: 600;
             color: #000;
         }
+        .summary-main .company-name {
+            font-weight: 400;
+            color: #6c757d;
+            margin-left: 5px;
+        }
         .summary-main .subject {
+            font-weight: 500;
             color: #495057;
-            margin: 2px 0 0 0;
+            margin: 4px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .summary-main .content-snippet {
+            font-size: 0.9em;
+            color: #6c757d;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -68,6 +81,7 @@
             text-align: right;
             font-size: 0.85em;
             color: #6c757d;
+            white-space: nowrap;
         }
         .summary-meta .timestamp {
             margin-bottom: 5px;
@@ -168,9 +182,17 @@
 
             // --- Safely extract data with defaults ---
             const senderName = structured?.customer_name || 'Unknown Sender';
+            const companyName = structured?.company_name || '';
             const subject = structured?.reason || 'No Subject';
             const isEscalated = structured?.escalate === true;
             const formattedTimestamp = new Date(timestamp).toLocaleString();
+
+            // --- Generate content snippet ---
+            const snippetLength = 100;
+            let contentSnippet = content.substring(0, snippetLength);
+            if (content.length > snippetLength) {
+                contentSnippet += "...";
+            }
 
             // Create a JSON string of just the structured data for display
             const structuredDetailsJson = JSON.stringify(structured, null, 2);
@@ -183,8 +205,12 @@
             messageItem.innerHTML = `
                 <div class="message-summary">
                     <div class="summary-main">
-                        <div class="sender">${senderName}</div>
+                        <div class="sender">
+                            ${senderName}
+                            ${companyName ? `<span class="company-name">(${companyName})</span>` : ''}
+                        </div>
                         <div class="subject">${subject}</div>
+                        <div class="content-snippet">${contentSnippet}</div>
                     </div>
                     <div class="summary-meta">
                         <div class="timestamp">${formattedTimestamp}</div>
