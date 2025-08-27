@@ -12,9 +12,6 @@ spec:
       containers:
         - name: user-container
           image: svc-finance-responder:latest
-          env:
-            - name: PORT
-              value: "8080"
           ports:
             - containerPort: 8080
               name: http1

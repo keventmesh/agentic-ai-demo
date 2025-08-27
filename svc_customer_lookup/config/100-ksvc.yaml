@@ -13,8 +13,6 @@ spec:
         - name: user-container
           image: svc-customer-lookup:latest
           env:
-            - name: PORT
-              value: "8080"
             - name: DB_HOST
               valueFrom:
                 secretKeyRef:

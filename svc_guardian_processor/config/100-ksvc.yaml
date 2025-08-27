@@ -13,8 +13,6 @@ spec:
         - name: user-container
           image: svc-guardian-processor:latest
           env:
-            - name: PORT
-              value: "8080"
             - name: LLM_API_BASE_URL
               valueFrom:
                 configMapKeyRef:
