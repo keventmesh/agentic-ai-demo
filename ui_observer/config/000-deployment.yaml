@@ -1,25 +1,36 @@
-apiVersion: serving.knative.dev/v1
-kind: Service
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: ui-observer
   namespace: keventmesh
 spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ui-observer
   template:
     metadata:
       labels:
         app: ui-observer
     spec:
       containers:
-        - name: user-container
+        - name: server
           image: ui-observer:latest
+          env:
+            - name: PORT
+              value: "8080"
           ports:
             - containerPort: 8080
-              name: http1
+          imagePullPolicy: Always
           readinessProbe:
             httpGet:
               path: /healthz
               port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /healthz
               port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
