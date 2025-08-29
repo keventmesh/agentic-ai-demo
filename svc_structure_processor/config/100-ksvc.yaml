@@ -31,11 +31,3 @@ spec:
           ports:
             - containerPort: 8080
               name: http1
-          readinessProbe:
-            httpGet:
-              path: /healthz
-              port: 8080
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 8080
