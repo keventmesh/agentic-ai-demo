@@ -1,24 +1,18 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: serving.knative.dev/v1
+kind: Service
 metadata:
   name: svc-router
   namespace: keventmesh
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: svc-router
   template:
     metadata:
       labels:
         app: svc-router
     spec:
       containers:
-        - name: server
+        - name: user-container
           image: svc-router:latest
           env:
-            - name: PORT
-              value: "8080"
             - name: LLM_API_BASE_URL
               valueFrom:
                 configMapKeyRef:
@@ -36,16 +30,4 @@ spec:
                   key: apiKey
           ports:
             - containerPort: 8080
-          imagePullPolicy: Always
-          readinessProbe:
-            httpGet:
-              path: /healthz
-              port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 8080
-            initialDelaySeconds: 15
-            periodSeconds: 20
+              name: http1

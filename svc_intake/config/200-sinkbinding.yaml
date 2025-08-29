@@ -7,8 +7,8 @@ metadata:
 spec:
   # The "subject" is the workload to inject K_SINK into.
   subject:
-    apiVersion: apps/v1
-    kind: Deployment
+    apiVersion: serving.knative.dev/v1
+    kind: Service
     name: svc-intake
 
   # The "sink" is the destination where events should be sent.

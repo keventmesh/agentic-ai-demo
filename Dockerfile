@@ -36,7 +36,7 @@ COPY --from=builder /app .
 # Activate the venv
 ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE ${PORT}
-CMD gunicorn --bind "0.0.0.0:${PORT}" "svc_intake.app:app"
+CMD exec gunicorn --bind "0.0.0.0:${PORT}" "svc_intake.app:app"
 
 
 FROM python:3.11-slim as svc-structure-processor
@@ -53,7 +53,7 @@ COPY --from=builder /app .
 # Activate the venv
 ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE ${PORT}
-CMD gunicorn --bind "0.0.0.0:${PORT}" "svc_structure_processor.app:app"
+CMD exec gunicorn --bind "0.0.0.0:${PORT}" "svc_structure_processor.app:app"
 
 
 FROM python:3.11-slim as svc-guardian-processor
@@ -70,7 +70,7 @@ COPY --from=builder /app .
 # Activate the venv
 ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE ${PORT}
-CMD gunicorn --bind "0.0.0.0:${PORT}" "svc_guardian_processor.app:app"
+CMD exec gunicorn --bind "0.0.0.0:${PORT}" "svc_guardian_processor.app:app"
 
 FROM python:3.11-slim as svc-customer-lookup
 
@@ -89,7 +89,7 @@ COPY --from=builder /app .
 # Activate the venv
 ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE ${PORT}
-CMD gunicorn --bind "0.0.0.0:${PORT}" "svc_customer_lookup.app:app"
+CMD exec gunicorn --bind "0.0.0.0:${PORT}" "svc_customer_lookup.app:app"
 
 
 FROM python:3.11-slim as svc-router
@@ -106,7 +106,7 @@ COPY --from=builder /app .
 # Activate the venv
 ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE ${PORT}
-CMD gunicorn --bind "0.0.0.0:${PORT}" "svc_router.app:app"
+CMD exec gunicorn --bind "0.0.0.0:${PORT}" "svc_router.app:app"
 
 FROM python:3.11-slim as svc-finance-responder
 WORKDIR /app
@@ -123,7 +123,7 @@ COPY --from=builder /app .
 ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE ${PORT}
 # Use gevent worker for better handling of concurrent SSE connections
-CMD gunicorn --worker-class gevent --workers 1 --timeout 0 --bind "0.0.0.0:${PORT}" "svc_finance_responder.app:app"
+CMD exec gunicorn --worker-class gevent --workers 1 --timeout 0 --bind "0.0.0.0:${PORT}" "svc_finance_responder.app:app"
 
 FROM python:3.11-slim as ui-observer
 WORKDIR /app
@@ -139,7 +139,7 @@ COPY --from=builder /app .
 # Activate the venv
 ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE ${PORT}
-CMD gunicorn --worker-class gevent --workers 1 --timeout 0 --bind "0.0.0.0:${PORT}" "ui_observer.app:app"
+CMD exec gunicorn --worker-class gevent --workers 1 --timeout 0 --bind "0.0.0.0:${PORT}" "ui_observer.app:app"
 
 
 FROM postgres:16.4 as db-customer

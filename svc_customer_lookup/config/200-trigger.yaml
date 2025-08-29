@@ -10,6 +10,6 @@ spec:
       type: com.example.triage.guardian.passed
   subscriber:
     ref:
-      apiVersion: v1
+      apiVersion: serving.knative.dev/v1
       kind: Service
       name: svc-customer-lookup

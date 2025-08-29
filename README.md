@@ -1,9 +1,9 @@
-
 ## Running on Kubernetes
 
 Install pre-requisites:
 - Skaffold: https://skaffold.dev/docs/install/
 - Knative Eventing: https://knative.dev/docs/install/ OR using [install-100-knative-eventing.sh](hack/install-100-knative-eventing.sh)
+- Knative Serving: https://knative.dev/docs/install/ OR using [install-150-knative-serving.sh](hack/install-150-knative-serving.sh)
 - Strimzi: https://strimzi.io/ OR using [install-200-strimzi.sh](hack/install-200-strimzi.sh)
 - Knative Eventing Kafka Broker: https://knative.dev/docs/eventing/brokers/broker-types/kafka-broker/ OR using [install-300-kn-kafka-broker.sh](hack/install-300-kn-kafka-broker.sh)
 
@@ -24,7 +24,56 @@ To deploy the services to your Kubernetes cluster, run:
 make deploy
 ```
 
-### Sanity Check
+### Accessing Services from your Local Network (for Kind/Minikube)
+
+The default sanity check below uses `kubectl port-forward`, which makes services available only on `localhost`. If you are running Kubernetes in a local cluster (like Kind or Minikube) and want to access services directly from your network, follow these steps.
+
+#### 1. Expose the Knative Ingress Gateway
+
+By default, the Knative ingress (Kourier) might be set up as a `LoadBalancer` service, which doesn't get an external IP on local clusters. We will patch it to use a predictable `NodePort`, making it accessible on the node's IP address.
+
+```shell
+kubectl patch service kourier \
+  --namespace kourier-system \
+  --type='strategic' \
+  --patch='{"spec":{"type":"NodePort","ports":[{"port":80,"nodePort":31080},{"port":443,"nodePort":31443}]}}'
+```
+
+#### 2. Configure a Custom Domain for Knative
+
+To get clean, predictable URLs like `svc-intake.keventmesh.example.com`, we need to configure Knative's default domain. This command sets `example.com` as the base domain for all services.
+
+```shell
+kubectl patch configmap/config-domain \
+  --namespace knative-serving \
+  --type merge \
+  --patch '{"data":{"example.com":""}}'
+```
+
+#### 3. Find Your Kubernetes Node's IP Address
+
+You need the IP address of the machine hosting your Kubernetes cluster on your local network.
+
+#### 4. Send a Request
+
+Now you can send a request to the intake service using `curl`, the node's IP, and the NodePort (`31080`). The `-H "Host: ..."` header is crucial as it tells the ingress which Knative service to route the request to.
+
+```shell
+# Replace with the IP address you found in the previous step
+export NODE_IP=192.168.2.151
+
+# Send the request
+curl -v -X POST http://${NODE_IP}:31080 \
+  -H "Host: svc-intake.keventmesh.example.com" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Hello, my name is Jane Doe. I am writing because I am completely locked out of my account for the Gizmo-X product. I have tried the password reset link five times and it is not working. I am really frustrated because I have a deadline today and need to access my files. Can someone please help me ASAP? My email is jane.doe@example.com."
+    }
+  '
+```
+You should receive the same `{"eventId":...}` response as the port-forward method. You can now proceed to the "Viewing the Full Event Flow" section.
+
+### Sanity Check (Using Port-Forward)
 
 Send a generic request to the intake service to start the event flow:
 
@@ -66,9 +115,11 @@ If your messages is a finance related one, you can see it in the finance inbox (
 
 2.  Open your browser to **http://localhost:8888**.
 
-3.  In a separate terminal, send a new, finance-related message to the intake service (which should still be port-forwarded on 8080 from the first step):
+3.  In a separate terminal, send a new, finance-related message to the intake service. You can use either the `port-forward` method on `localhost:8080` or the network method from the section above:
     ```shell
-    curl -X POST http://localhost:8080/ \
+    # Using the network method (replace NODE_IP)
+    curl -X POST http://${NODE_IP}:31080 \
+      -H "Host: svc-intake.keventmesh.example.com" \
       -H "Content-Type: application/json" \
       -d '{
         "content": "Hi, I need to dispute a charge on my last invoice, #INV-2025-07. I believe I was overcharged for the premium subscription tier. Can you please look into this and issue a refund? My account email is john.smith@globaltech.com. Thanks, John."
