@@ -32,6 +32,13 @@ deploy:
 	echo "📦 Deploying manifests..."; \
 	skaffold render --default-repo="$$IMAGE_REGISTRY" --tag="$$IMAGE_TAG" | envsubst | kubectl apply -f -
 
+deploy-openshift: deploy
+	@echo "🔼 Applying OpenShift-specific Routes..."
+	kubectl apply -f openshift/routes.yaml -n keventmesh
+	@echo "✅ OpenShift deployment complete."
+
+.PHONY: deploy-openshift
+
 clean:
 	@echo "🧹 Cleaning up..."; \
 	skaffold delete
