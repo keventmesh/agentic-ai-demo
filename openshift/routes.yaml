@@ -1,0 +1,33 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ui-observer
+  namespace: keventmesh
+  labels:
+    app: ui-observer
+spec:
+  to:
+    kind: Service
+    name: ui-observer
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: svc-finance-responder
+  namespace: keventmesh
+  labels:
+    app: svc-finance-responder
+spec:
+  to:
+    kind: Service
+    name: svc-finance-responder
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
